@@ -1,0 +1,6 @@
+{
+  "name": "Fryway — Authentic Hand Cut Fries",
+  "description": "Premium takeaway and home delivery hand cut fries in Bahria Town Lahore with gourmet flavours and signature sauces.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
