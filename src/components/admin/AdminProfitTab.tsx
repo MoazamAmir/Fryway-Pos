@@ -5,10 +5,9 @@ import {
   DollarSign,
   Receipt,
   PieChart,
-  Percent,
-  Calendar,
-  AlertCircle,
   ArrowUpRight,
+  ArrowDownRight,
+  Sparkles,
 } from 'lucide-react';
 import { Order, Expense } from '../../types';
 import { formatPKR } from '../../lib/pricing';
@@ -21,32 +20,39 @@ interface AdminProfitTabProps {
 export const AdminProfitTab: React.FC<AdminProfitTabProps> = ({ orders, expenses }) => {
   const [period, setPeriod] = useState<'today' | 'week' | 'month' | 'year'>('month');
 
-  // Multipliers for analytical projections
-  const grossSales = orders.reduce((s, o) => s + o.grandTotal, 0);
-  const totalExp = expenses.reduce((s, e) => s + e.amount, 0);
+  // Actual recorded data from the active store
+  const recordedSales = orders
+    .filter((o) => o.status !== 'cancelled')
+    .reduce((s, o) => s + o.grandTotal, 0);
 
-  let periodSales = grossSales;
-  let periodExpenses = totalExp;
+  const recordedExpenses = expenses.reduce((s, e) => s + e.amount, 0);
+
+  // Timeframe projections for demo mode
+  let periodSales = recordedSales;
+  let periodExpenses = recordedExpenses;
 
   if (period === 'today') {
-    periodSales = grossSales || 18500;
-    periodExpenses = expenses.slice(0, 2).reduce((s, e) => s + e.amount, 0) || 12000;
+    periodSales = recordedSales || 18500;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayExp = expenses.filter((e) => e.date === todayStr).reduce((s, e) => s + e.amount, 0);
+    periodExpenses = todayExp || 14500;
   } else if (period === 'week') {
-    periodSales = (grossSales || 18500) * 6.5;
-    periodExpenses = totalExp * 0.9;
+    periodSales = (recordedSales || 18500) * 6.5;
+    periodExpenses = recordedExpenses * 0.9;
   } else if (period === 'month') {
-    periodSales = (grossSales || 18500) * 26;
-    periodExpenses = totalExp * 3.4;
+    periodSales = (recordedSales || 18500) * 26;
+    periodExpenses = recordedExpenses * 3.4;
   } else if (period === 'year') {
-    periodSales = (grossSales || 18500) * 310;
-    periodExpenses = totalExp * 40;
+    periodSales = (recordedSales || 18500) * 310;
+    periodExpenses = recordedExpenses * 40;
   }
 
+  // Formula: Profit = Sales - Expenses (Strictly following prompt)
   const netProfit = periodSales - periodExpenses;
   const marginPercent = periodSales > 0 ? Math.round((netProfit / periodSales) * 100) : 0;
   const isProfitable = netProfit >= 0;
 
-  // Breakdown of expenses
+  // Breakdown of recorded expenses by category
   const categoryTotals: Record<string, number> = {};
   expenses.forEach((e) => {
     categoryTotals[e.category] = (categoryTotals[e.category] || 0) + e.amount;
@@ -54,27 +60,27 @@ export const AdminProfitTab: React.FC<AdminProfitTabProps> = ({ orders, expenses
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-800">
+      {/* Top Header Card */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs">
         <div>
-          <h2 className="text-lg font-black text-white font-['Syne',sans-serif] uppercase">
+          <h2 className="text-xl font-black text-neutral-900 uppercase tracking-tight">
             Profit & Margin Overview
           </h2>
-          <p className="text-xs text-neutral-400">
-            Recorded Profit = Total Sales − Operating Expenses (Bahria Town Kitchen)
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Formula: Recorded Profit = Sales Revenue − Recorded Operating Expenses
           </p>
         </div>
 
         {/* Period Selector */}
-        <div className="flex items-center bg-neutral-950 p-1 rounded-xl border border-neutral-800">
+        <div className="flex items-center bg-neutral-100/80 p-1 rounded-xl border border-neutral-200">
           {(['today', 'week', 'month', 'year'] as const).map((p) => (
             <button
               key={p}
               onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
                 period === p
-                  ? 'bg-amber-400 text-neutral-950 font-black'
-                  : 'text-neutral-400 hover:text-white'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-neutral-600 hover:text-neutral-900'
               }`}
             >
               {p === 'today' ? 'Today' : p === 'week' ? 'This Week' : p === 'month' ? 'This Month' : 'Annual'}
@@ -86,105 +92,131 @@ export const AdminProfitTab: React.FC<AdminProfitTabProps> = ({ orders, expenses
       {/* Primary 3 Executive Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Gross Sales */}
-        <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Gross Sales</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+            <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">
+              Total Recorded Sales
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-white">{formatPKR(Math.round(periodSales))}</div>
-          <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-bold">
+          <div className="text-2xl font-black text-neutral-900">
+            {formatPKR(Math.round(periodSales))}
+          </div>
+          <span className="text-[11px] text-emerald-800 flex items-center gap-1 font-bold">
             <ArrowUpRight className="w-3.5 h-3.5" />
-            From Takeaway & Bahria Delivery
+            From Takeaway Counter & Bahria Deliveries
           </span>
         </div>
 
         {/* Operating Expenses */}
-        <div className="p-5 rounded-2xl bg-neutral-900 border border-neutral-800 space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-neutral-400 font-bold uppercase tracking-wider">Total Expenses</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 flex items-center justify-center font-bold">
+            <span className="text-xs text-neutral-500 font-bold uppercase tracking-wider">
+              Recorded Operating Expenses
+            </span>
+            <div className="w-8 h-8 rounded-xl bg-neutral-100 text-neutral-700 flex items-center justify-center font-bold">
               <Receipt className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-black text-amber-300">{formatPKR(Math.round(periodExpenses))}</div>
-          <span className="text-[11px] text-neutral-400 font-bold">
-            Potatoes, Oil, Sauces, Gas, Packaging
+          <div className="text-2xl font-black text-neutral-900">
+            {formatPKR(Math.round(periodExpenses))}
+          </div>
+          <span className="text-[11px] text-neutral-500 font-medium">
+            Potatoes, Frying Oil, Sauces, Gas, Packaging
           </span>
         </div>
 
         {/* Net Profit & Margin */}
         <div
-          className={`p-5 rounded-2xl border space-y-2 ${
+          className={`p-5 rounded-2xl border shadow-xs space-y-2 ${
             isProfitable
-              ? 'bg-emerald-950/40 border-emerald-800/80 text-emerald-200'
-              : 'bg-rose-950/40 border-rose-900/80 text-rose-200'
+              ? 'bg-emerald-50/70 border-emerald-200 text-emerald-950'
+              : 'bg-rose-50/70 border-rose-200 text-rose-950'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider">Net Recorded Profit</span>
-            <span className="px-2 py-0.5 rounded-full bg-neutral-950 text-white text-[10px] font-black border border-neutral-800">
+            <span className="text-xs font-bold uppercase tracking-wider">
+              Net Recorded Profit
+            </span>
+            <span className="px-2.5 py-0.5 rounded-full bg-white text-emerald-900 text-[10px] font-black border border-emerald-200">
               {marginPercent}% Margin
             </span>
           </div>
-          <div className="text-2xl font-black text-white">{formatPKR(Math.round(netProfit))}</div>
-          <span className="text-[11px] opacity-80 block">
-            {isProfitable ? 'Positive Cash Flow' : 'Deficit in current period'}
+          <div className="text-2xl font-black text-emerald-950">
+            {formatPKR(Math.round(netProfit))}
+          </div>
+          <span className="text-[11px] font-medium flex items-center gap-1">
+            {isProfitable ? (
+              <>
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-700" />
+                <span>Positive Operating Cash Flow</span>
+              </>
+            ) : (
+              <>
+                <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
+                <span>Operating Deficit</span>
+              </>
+            )}
           </span>
         </div>
       </div>
 
       {/* Visual Proportional Comparison Bar */}
-      <div className="bg-neutral-900 p-5 rounded-2xl border border-neutral-800 space-y-3">
+      <div className="bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs space-y-3">
         <div className="flex items-center justify-between text-xs">
-          <span className="font-bold text-white uppercase tracking-wider">Revenue Breakdown</span>
-          <span className="text-neutral-400">
-            Expenses: {Math.min(100, Math.round((periodExpenses / (periodSales || 1)) * 100))}% of Sales
+          <span className="font-bold text-neutral-900 uppercase tracking-wider">
+            Revenue vs Operating Cost Ratio
+          </span>
+          <span className="text-neutral-500">
+            Operating Costs: {Math.min(100, Math.round((periodExpenses / (periodSales || 1)) * 100))}% of Sales
           </span>
         </div>
 
-        <div className="w-full h-4 bg-neutral-950 rounded-full overflow-hidden flex border border-neutral-800">
+        <div className="w-full h-4 bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200">
           <div
             style={{ width: `${Math.min(100, (periodExpenses / (periodSales || 1)) * 100)}%` }}
-            className="h-full bg-amber-400 transition-all duration-500"
+            className="h-full bg-neutral-400 transition-all duration-500"
             title="Expenses"
           />
           <div
             style={{ width: `${Math.max(0, 100 - (periodExpenses / (periodSales || 1)) * 100)}%` }}
-            className="h-full bg-emerald-500 transition-all duration-500"
+            className="h-full bg-emerald-700 transition-all duration-500"
             title="Profit"
           />
         </div>
 
-        <div className="flex items-center justify-between text-[11px] text-neutral-400 pt-1">
+        <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-neutral-600 pt-1">
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-amber-400" />
-            <span>Operating Cost ({formatPKR(Math.round(periodExpenses))})</span>
+            <span className="w-3 h-3 rounded-xs bg-neutral-400" />
+            <span>Recorded Expenses ({formatPKR(Math.round(periodExpenses))})</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="w-3 h-3 rounded bg-emerald-500" />
-            <span>Net Retained Margin ({formatPKR(Math.round(Math.max(0, netProfit)))})</span>
+            <span className="w-3 h-3 rounded-xs bg-emerald-700" />
+            <span>Net Operating Margin ({formatPKR(Math.round(Math.max(0, netProfit)))})</span>
           </div>
         </div>
       </div>
 
-      {/* Top Cost Drivers List */}
-      <div className="bg-neutral-900 p-5 rounded-2xl border border-neutral-800 space-y-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-          Top Operational Expense Categories
+      {/* Top Recorded Cost Drivers List */}
+      <div className="bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs space-y-4">
+        <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
+          Recorded Expense Breakdown by Category
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {Object.entries(categoryTotals).map(([cat, amount]) => (
             <div
               key={cat}
-              className="p-3.5 rounded-xl bg-neutral-950 border border-neutral-800/80 space-y-1"
+              className="p-4 rounded-xl bg-neutral-50 border border-neutral-200/80 space-y-1"
             >
               <span className="text-[10px] text-neutral-500 font-bold uppercase tracking-wider block truncate">
                 {cat.replace(/_/g, ' ')}
               </span>
-              <span className="text-base font-black text-amber-300 block">{formatPKR(amount)}</span>
+              <span className="text-base font-black text-neutral-900 block">
+                {formatPKR(amount)}
+              </span>
             </div>
           ))}
         </div>

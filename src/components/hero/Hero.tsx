@@ -68,19 +68,19 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
               <button
                 id="hero-order-now-cta"
                 onClick={onOrderNow}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-base shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-base shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
               >
                 <Sparkles className="w-5 h-5 text-amber-300" />
-                <span>ORDER NOW</span>
+                <span>START ORDER</span>
                 <ArrowRight className="w-5 h-5" />
               </button>
 
               <button
                 id="hero-explore-menu-cta"
                 onClick={onExploreMenu}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white hover:bg-emerald-50 text-emerald-900 border-2 border-emerald-800/30 hover:border-emerald-800 font-bold text-base transition-all focus:outline-none"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white hover:bg-emerald-50 text-emerald-900 border-2 border-emerald-800/30 hover:border-emerald-800 font-bold text-base transition-all focus:outline-none cursor-pointer"
               >
-                <span>Explore Menu & Pricing</span>
+                <span>VIEW MENU</span>
               </button>
             </div>
 

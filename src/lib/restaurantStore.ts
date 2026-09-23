@@ -1,463 +1,59 @@
 /**
- * Centralized Store and State Sync Layer for Fryway
- * Manages Orders, Waiter Notifications, Kitchen Queue, Expenses, and Custom Menu Items.
+ * Centralized Store and State Sync Layer for Fryway POS Ecosystem
+ * Manages Orders (Takeaway + Delivery), Kitchen Queue, Menu & Modifiers Availability,
+ * Operating Expenses, Customer Directory, Staff Accounts, and Business Settings.
  */
 
 import {
   Order,
   OrderStatus,
-  WaiterNotification,
   Expense,
   MenuItem,
-  WaiterStaff,
   FlavourItem,
   SauceItem,
   ExtraItem,
   StaffMember,
   BusinessSettings,
 } from '../types';
-import { MENU_PRODUCTS, FLAVOURS, SAUCES, EXTRAS } from '../data/menuData';
+import { MENU_PRODUCTS, FLAVOURS, SAUCES, EXTRAS, RESTAURANT_INFO } from '../data/menuData';
 import { audioAlerts } from './audioAlerts';
 
-export const WAITER_STAFF: WaiterStaff[] = [
-  { id: 'w1', name: 'Ali Raza', pin: '1111', shift: 'Evening Shift' },
-  { id: 'w2', name: 'Hamza Khan', pin: '2222', shift: 'Night Shift' },
-  { id: 'w3', name: 'Bilal Ahmed', pin: '3333', shift: 'Day Shift' },
-];
-
-export const DINE_IN_TABLES = [
-  { id: 'T-01', name: 'Table 1', zone: 'Indoor Main', capacity: 2 },
-  { id: 'T-02', name: 'Table 2', zone: 'Indoor Main', capacity: 4 },
-  { id: 'T-03', name: 'Table 3', zone: 'Indoor Main', capacity: 4 },
-  { id: 'T-04', name: 'Table 4', zone: 'Family Booth', capacity: 6 },
-  { id: 'T-05', name: 'Table 5', zone: 'Family Booth', capacity: 6 },
-  { id: 'T-VIP', name: 'VIP Lounge', zone: 'Upper Deck', capacity: 8 },
-  { id: 'T-OUT1', name: 'Outdoor 1', zone: 'Patio Lawn', capacity: 4 },
-  { id: 'T-OUT2', name: 'Outdoor 2', zone: 'Patio Lawn', capacity: 4 },
-  { id: 'T-CTR', name: 'Counter Stool', zone: 'Takeaway Bar', capacity: 1 },
-];
-
 export const AUTH_PINS = {
-  admin: '7777', // Owner pin
-  kitchen: '5555', // Kitchen staff pin
-  waiterDemo: '1234', // Quick waiter demo pin or staff PINs
+  admin: '7777', // Owner/Admin PIN
+  kitchen: '5555', // Kitchen staff PIN
+  counter: '1111', // Counter staff PIN
 };
 
 // Storage Keys
-const ORDERS_KEY = 'fryway_orders_v2';
-const NOTIFICATIONS_KEY = 'fryway_notifications_v2';
-const EXPENSES_KEY = 'fryway_expenses_v2';
-const MENU_OVERRIDE_KEY = 'fryway_menu_overrides_v2';
+const ORDERS_KEY = 'fryway_orders_v3';
+const EXPENSES_KEY = 'fryway_expenses_v3';
+const MENU_KEY = 'fryway_menu_v3';
+const FLAVOURS_KEY = 'fryway_flavours_v3';
+const SAUCES_KEY = 'fryway_sauces_v3';
+const EXTRAS_KEY = 'fryway_extras_v3';
+const SETTINGS_KEY = 'fryway_settings_v3';
+const STAFF_KEY = 'fryway_staff_v3';
 
-// Dispatch custom event for real-time reactivity
+// Dispatch custom event for real-time reactivity across components
 function broadcastUpdate(type: string, detail?: any) {
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent(type, { detail }));
   }
 }
 
-// Pre-seeded realistic expenses for Bahria Town kitchen
-const INITIAL_EXPENSES: Expense[] = [
-  {
-    id: 'exp_01',
-    title: 'Fresh Grade-A Whole Potatoes (150 kg sack)',
-    category: 'potatoes_produce',
-    amount: 14500,
-    date: new Date().toISOString().split('T')[0],
-    time: '09:30 AM',
-    paymentMethod: 'cash',
-    notes: 'Direct from wholesale mandi',
-  },
-  {
-    id: 'exp_02',
-    title: 'Premium High-Smoke Frying Oil (40 Liters)',
-    category: 'cooking_oil',
-    amount: 22000,
-    date: new Date().toISOString().split('T')[0],
-    time: '10:15 AM',
-    paymentMethod: 'bank_transfer',
-    notes: 'Special double-fry cooking oil',
-  },
-  {
-    id: 'exp_03',
-    title: 'Thermal Fries Boxes & Brown Paper Bags (1,000 pcs)',
-    category: 'packaging',
-    amount: 8500,
-    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
-    time: '02:00 PM',
-    paymentMethod: 'cash',
-    notes: 'Custom branded Fryway packaging',
-  },
-  {
-    id: 'exp_04',
-    title: 'Dairy Cream & Mayo Base for House Sauces',
-    category: 'sauces_spices',
-    amount: 9200,
-    date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
-    time: '11:00 AM',
-    paymentMethod: 'cash',
-    notes: 'Garlic mayo & cheese mayo restock',
-  },
-  {
-    id: 'exp_05',
-    title: 'Kitchen Commercial Cylinder Gas Refill',
-    category: 'utilities_gas',
-    amount: 16800,
-    date: new Date(Date.now() - 86400000 * 4).toISOString().split('T')[0],
-    time: '04:30 PM',
-    paymentMethod: 'cash',
-    notes: 'Twin burners for deep fryers',
-  },
-  {
-    id: 'exp_06',
-    title: 'Delivery Bike Fuel Allowance & Maintenance',
-    category: 'delivery_fuel',
-    amount: 4500,
-    date: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0],
-    time: '01:15 PM',
-    paymentMethod: 'petty_cash',
-    notes: 'Bahria Town Sector C, J, Tulip riders',
-  },
-  {
-    id: 'exp_07',
-    title: 'Head Fryer & Kitchen Staff Bi-Weekly Stipend',
-    category: 'salaries',
-    amount: 45000,
-    date: new Date(Date.now() - 86400000 * 10).toISOString().split('T')[0],
-    time: '06:00 PM',
-    paymentMethod: 'bank_transfer',
-    notes: 'Kitchen & counter staff',
-  },
-];
-
-// Pre-seeded initial sample orders so dashboard has instant rich data
-function getInitialOrders(): Order[] {
-  const now = Date.now();
-  return [
-    {
-      id: 'ord_sample_1',
-      orderNumber: 'FW-8421',
-      createdAt: new Date(now - 12 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      placedAtTimestamp: now - 12 * 60000,
-      orderType: 'dine_in',
-      tableNumber: 'Table 4',
-      waiterId: 'w1',
-      waiterName: 'Ali Raza',
-      customer: { name: 'Dr. Tariq', phone: '0300-9876543' },
-      items: [
-        {
-          id: 'item_1',
-          productId: 'fries_medium',
-          name: 'Medium Hand-Cut Fries',
-          size: 'medium',
-          sizeLabel: 'Medium Fries',
-          style: 'masala_sauce',
-          flavour: { id: 'tikka', name: 'Tikka', description: '', category: 'spicy', heatLevel: 2 },
-          sauce: { id: 'garlic_mayo', name: 'Garlic Mayo', description: '', profile: 'creamy', heatLevel: 0 },
-          extras: [{ extraId: 'extra_dip', name: 'Extra Dip', price: 80, quantity: 1 }],
-          specialInstructions: 'Make it extra crisp!',
-          unitPrice: 530,
-          quantity: 2,
-          totalPrice: 1060,
-          image: '',
-        },
-      ],
-      subtotal: 1060,
-      deliveryFee: 0,
-      grandTotal: 1060,
-      paymentMethod: 'cash_at_table',
-      status: 'preparing',
-      estimatedMinutes: 20,
-      statusUpdates: [
-        { status: 'received', time: '12 mins ago', note: 'Order sent by Waiter Ali Raza' },
-        { status: 'preparing', time: '8 mins ago', note: 'Frying in hot oil by Kitchen Chef' },
-      ],
-      kitchenAcceptedAt: now - 8 * 60000,
-    },
-    {
-      id: 'ord_sample_2',
-      orderNumber: 'FW-8420',
-      createdAt: new Date(now - 25 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      placedAtTimestamp: now - 25 * 60000,
-      orderType: 'delivery',
-      customer: {
-        name: 'Saad Malik',
-        phone: '0321-4455667',
-        address: 'House 14, Street 8, Sector C, Bahria Town',
-        deliveryNotes: 'Ring bell twice',
-      },
-      items: [
-        {
-          id: 'item_2',
-          productId: 'fries_large',
-          name: 'Large Hand-Cut Fries',
-          size: 'large',
-          sizeLabel: 'Large Fries',
-          style: 'masala_sauce',
-          flavour: { id: 'mexican', name: 'Mexican', description: '', category: 'spicy', heatLevel: 2 },
-          sauce: { id: 'cheese_mayo', name: 'Cheese Mayo', description: '', profile: 'creamy', heatLevel: 0 },
-          extras: [],
-          unitPrice: 600,
-          quantity: 1,
-          totalPrice: 600,
-          image: '',
-        },
-      ],
-      subtotal: 600,
-      deliveryFee: 120,
-      grandTotal: 720,
-      paymentMethod: 'cash_on_delivery',
-      status: 'out_for_delivery',
-      estimatedMinutes: 30,
-      statusUpdates: [
-        { status: 'received', time: '25 mins ago', note: 'Online order placed' },
-        { status: 'preparing', time: '20 mins ago', note: 'Kitchen preparing order' },
-        { status: 'ready', time: '8 mins ago', note: 'Packed hot in thermal seal' },
-        { status: 'out_for_delivery', time: '4 mins ago', note: 'Rider dispatched to Sector C' },
-      ],
-    },
-  ];
-}
-
-/**
- * Orders Management
- */
-export function getOrders(): Order[] {
-  try {
-    const raw = localStorage.getItem(ORDERS_KEY);
-    if (!raw) {
-      const initial = getInitialOrders();
-      localStorage.setItem(ORDERS_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return getInitialOrders();
-  }
-}
-
-export function saveOrders(orders: Order[]): void {
-  try {
-    localStorage.setItem(ORDERS_KEY, JSON.stringify(orders));
-    broadcastUpdate('fryway_order_update', orders);
-  } catch (e) {
-    console.error('Failed to save orders to localStorage', e);
-  }
-}
-
-export function addOrder(newOrder: Order): void {
-  const current = getOrders();
-  const updated = [newOrder, ...current];
-  saveOrders(updated);
-
-  // Play kitchen chime when a new order arrives
-  audioAlerts.playNewOrderChime();
-}
-
-export function updateOrderStatus(
-  orderId: string,
-  status: OrderStatus,
-  note?: string
-): Order | null {
-  const orders = getOrders();
-  const idx = orders.findIndex((o) => o.id === orderId);
-  if (idx === -1) return null;
-
-  const now = Date.now();
-  const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  const existing = orders[idx];
-  const updatedOrder: Order = {
-    ...existing,
-    status,
-    statusUpdates: [
-      ...existing.statusUpdates,
-      {
-        status,
-        time: timeStr,
-        note: note || `Order status updated to ${status.replace('_', ' ')}`,
-      },
-    ],
-  };
-
-  if (status === 'preparing') {
-    updatedOrder.kitchenAcceptedAt = now;
-  }
-  if (status === 'ready') {
-    updatedOrder.readyAtTimestamp = now;
-  }
-  if (status === 'completed' || status === 'delivered') {
-    updatedOrder.deliveredAtTimestamp = now;
-  }
-
-  orders[idx] = updatedOrder;
-  saveOrders(orders);
-
-  // If this order is ready and belongs to a waiter table, create notification!
-  if (status === 'ready') {
-    audioAlerts.playOrderReadyBell();
-    if (existing.waiterId && existing.tableNumber) {
-      addWaiterNotification({
-        orderId: existing.id,
-        orderNumber: existing.orderNumber,
-        tableNumber: existing.tableNumber,
-        waiterId: existing.waiterId,
-        waiterName: existing.waiterName || 'Waiter',
-        message: `Order #${existing.orderNumber} for ${existing.tableNumber} is FRESH & READY for table pickup!`,
-      });
-    }
-  }
-
-  return updatedOrder;
-}
-
-/**
- * Waiter Notifications
- */
-export function getWaiterNotifications(): WaiterNotification[] {
-  try {
-    const raw = localStorage.getItem(NOTIFICATIONS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-export function addWaiterNotification(
-  notif: Omit<WaiterNotification, 'id' | 'timestamp' | 'read'>
-): WaiterNotification {
-  const all = getWaiterNotifications();
-  const newNotif: WaiterNotification = {
-    ...notif,
-    id: 'notif_' + Date.now(),
-    timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    read: false,
-  };
-  const updated = [newNotif, ...all];
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_notification_update', newNotif);
-  return newNotif;
-}
-
-export function markNotificationRead(id: string): void {
-  const all = getWaiterNotifications();
-  const updated = all.map((n) => (n.id === id ? { ...n, read: true } : n));
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_notification_update');
-}
-
-export function clearAllNotifications(waiterId?: string): void {
-  const all = getWaiterNotifications();
-  const filtered = waiterId ? all.filter((n) => n.waiterId !== waiterId) : [];
-  localStorage.setItem(NOTIFICATIONS_KEY, JSON.stringify(filtered));
-  broadcastUpdate('fryway_notification_update');
-}
-
-/**
- * Expenses Management
- */
-export function getExpenses(): Expense[] {
-  try {
-    const raw = localStorage.getItem(EXPENSES_KEY);
-    if (!raw) {
-      localStorage.setItem(EXPENSES_KEY, JSON.stringify(INITIAL_EXPENSES));
-      return INITIAL_EXPENSES;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return INITIAL_EXPENSES;
-  }
-}
-
-export function addExpense(expenseData: Omit<Expense, 'id' | 'time'>): Expense {
-  const all = getExpenses();
-  const newExp: Expense = {
-    ...expenseData,
-    id: 'exp_' + Date.now(),
-    time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-  };
-  const updated = [newExp, ...all];
-  localStorage.setItem(EXPENSES_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_expense_update', newExp);
-  return newExp;
-}
-
-export function deleteExpense(id: string): void {
-  const all = getExpenses();
-  const updated = all.filter((e) => e.id !== id);
-  localStorage.setItem(EXPENSES_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_expense_update');
-}
-
-/**
- * Custom Menu Items & Live Availability
- */
-export function getMenuItems(): MenuItem[] {
-  try {
-    const raw = localStorage.getItem(MENU_OVERRIDE_KEY);
-    if (!raw) {
-      return MENU_PRODUCTS.map((m) => ({ ...m, isAvailable: true }));
-    }
-    return JSON.parse(raw);
-  } catch {
-    return MENU_PRODUCTS.map((m) => ({ ...m, isAvailable: true }));
-  }
-}
-
-export function saveMenuItems(items: MenuItem[]): void {
-  localStorage.setItem(MENU_OVERRIDE_KEY, JSON.stringify(items));
-  broadcastUpdate('fryway_menu_update', items);
-}
-
-export function toggleMenuItemAvailability(productId: string): MenuItem[] {
-  const current = getMenuItems();
-  const updated = current.map((item) =>
-    item.id === productId ? { ...item, isAvailable: item.isAvailable === false ? true : false } : item
-  );
-  saveMenuItems(updated);
-  return updated;
-}
-
-export function addCustomMenuItem(item: Omit<MenuItem, 'id'>): MenuItem {
-  const current = getMenuItems();
-  const newItem: MenuItem = {
-    ...item,
-    id: 'custom_item_' + Date.now(),
-    isAvailable: true,
-  };
-  const updated = [...current, newItem];
-  saveMenuItems(updated);
-  return newItem;
-}
-
-export function updateMenuItem(productId: string, partial: Partial<MenuItem>): MenuItem[] {
-  const current = getMenuItems();
-  const updated = current.map((it) => (it.id === productId ? { ...it, ...partial } : it));
-  saveMenuItems(updated);
-  return updated;
-}
-
-export function deleteCustomMenuItem(productId: string): MenuItem[] {
-  const current = getMenuItems();
-  const updated = current.filter((it) => it.id !== productId);
-  saveMenuItems(updated);
-  return updated;
-}
-
-/**
- * Business Settings Management
- */
-const SETTINGS_KEY = 'fryway_business_settings_v1';
-
-export const DEFAULT_SETTINGS: BusinessSettings = {
-  restaurantName: 'FRYWAY Authentic Hand Cut Fries',
-  tagline: 'Authentic Hand Cut Fries Double Crisp',
+// ----------------------------------------------------
+// Business Settings
+// ----------------------------------------------------
+const DEFAULT_SETTINGS: BusinessSettings = {
+  restaurantName: RESTAURANT_INFO.name,
+  tagline: RESTAURANT_INFO.tagline,
   isOpen: true,
-  phone: '+92 300 1234567',
-  address: 'Sector C Commercial, Bahria Town, Lahore',
-  openingHours: '1:00 PM – 2:00 AM Daily',
-  deliveryFee: 150,
-  freeDeliveryThreshold: 1200,
+  phone: RESTAURANT_INFO.phone,
+  address: RESTAURANT_INFO.address,
+  openingHours: RESTAURANT_INFO.hours,
+  deliveryFee: RESTAURANT_INFO.deliveryFee,
+  freeDeliveryThreshold: RESTAURANT_INFO.freeDeliveryThreshold,
+  minOrderAmount: RESTAURANT_INFO.minOrderAmount,
   currency: 'PKR',
   taxPercent: 0,
   discountPercent: 0,
@@ -465,32 +61,122 @@ export const DEFAULT_SETTINGS: BusinessSettings = {
 
 export function getBusinessSettings(): BusinessSettings {
   try {
-    const raw = localStorage.getItem(SETTINGS_KEY);
-    if (!raw) {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(DEFAULT_SETTINGS));
-      return DEFAULT_SETTINGS;
-    }
-    return { ...DEFAULT_SETTINGS, ...JSON.parse(raw) };
-  } catch {
-    return DEFAULT_SETTINGS;
-  }
+    const saved = localStorage.getItem(SETTINGS_KEY);
+    if (saved) return { ...DEFAULT_SETTINGS, ...JSON.parse(saved) };
+  } catch {}
+  return DEFAULT_SETTINGS;
 }
 
 export function updateBusinessSettings(partial: Partial<BusinessSettings>): BusinessSettings {
   const current = getBusinessSettings();
-  const updated: BusinessSettings = { ...current, ...partial };
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+  const updated = { ...current, ...partial };
+  try {
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(updated));
+  } catch {}
   broadcastUpdate('fryway_settings_update', updated);
   return updated;
 }
 
-/**
- * Flavours & Sauces Availability Store
- */
-const FLAVOURS_KEY = 'fryway_flavours_v2';
-const SAUCES_KEY = 'fryway_sauces_v2';
-const EXTRAS_KEY = 'fryway_extras_v2';
+// ----------------------------------------------------
+// Staff Accounts Management
+// ----------------------------------------------------
+const INITIAL_STAFF: StaffMember[] = [
+  {
+    id: 'st_01',
+    name: 'Muhammad Tariq (Owner / General Manager)',
+    role: 'admin',
+    pin: '7777',
+    phone: '0312-4424505',
+    status: 'active',
+    joinedDate: '2025-01-10',
+  },
+  {
+    id: 'st_02',
+    name: 'Chef Bilal Ahmed (Head Line Fryer)',
+    role: 'kitchen',
+    pin: '5555',
+    phone: '0300-1234567',
+    status: 'active',
+    joinedDate: '2025-02-15',
+  },
+  {
+    id: 'st_03',
+    name: 'Hamza Malik (Counter POS & Expediter)',
+    role: 'counter',
+    pin: '1111',
+    phone: '0321-9876543',
+    status: 'active',
+    joinedDate: '2025-03-01',
+  },
+  {
+    id: 'st_04',
+    name: 'Saad Farooq (Evening Kitchen Prep)',
+    role: 'kitchen',
+    pin: '5556',
+    phone: '0305-5554321',
+    status: 'active',
+    joinedDate: '2025-03-20',
+  },
+];
 
+export function getStaffMembers(): StaffMember[] {
+  try {
+    const saved = localStorage.getItem(STAFF_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  try {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(INITIAL_STAFF));
+  } catch {}
+  return INITIAL_STAFF;
+}
+
+export function addStaffMember(staff: Omit<StaffMember, 'id' | 'joinedDate'>): StaffMember {
+  const current = getStaffMembers();
+  const newStaff: StaffMember = {
+    ...staff,
+    id: `st_${Date.now()}`,
+    joinedDate: new Date().toISOString().split('T')[0],
+  };
+  const updated = [newStaff, ...current];
+  try {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_staff_update', updated);
+  return newStaff;
+}
+
+export function toggleStaffStatus(id: string): void {
+  const current = getStaffMembers();
+  const updated = current.map((st) =>
+    st.id === id ? { ...st, status: (st.status === 'active' ? 'disabled' : 'active') as 'active' | 'disabled' } : st
+  );
+  try {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_staff_update', updated);
+}
+
+export function updateStaffPin(id: string, newPin: string): void {
+  const current = getStaffMembers();
+  const updated = current.map((st) => (st.id === id ? { ...st, pin: newPin } : st));
+  try {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_staff_update', updated);
+}
+
+export function deleteStaffMember(id: string): void {
+  const current = getStaffMembers();
+  const updated = current.filter((st) => st.id !== id);
+  try {
+    localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_staff_update', updated);
+}
+
+// ----------------------------------------------------
+// Menu Products, Flavours, Sauces & Extras Management
+// ----------------------------------------------------
 export interface ManagedFlavour extends FlavourItem {
   isAvailable: boolean;
 }
@@ -503,179 +189,703 @@ export interface ManagedExtra extends ExtraItem {
   isAvailable: boolean;
 }
 
+export function getMenuItems(): MenuItem[] {
+  try {
+    const saved = localStorage.getItem(MENU_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  const initial = MENU_PRODUCTS.map((item) => ({ ...item, isAvailable: true }));
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(initial));
+  } catch {}
+  return initial;
+}
+
+export function toggleMenuItemAvailability(id: string): void {
+  const current = getMenuItems();
+  const updated = current.map((it) => (it.id === id ? { ...it, isAvailable: !it.isAvailable } : it));
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_menu_update', updated);
+}
+
+export function updateMenuItem(id: string, updates: Partial<MenuItem>): void {
+  const current = getMenuItems();
+  const updated = current.map((it) => (it.id === id ? { ...it, ...updates } : it));
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_menu_update', updated);
+}
+
+export function addCustomMenuItem(item: Omit<MenuItem, 'id' | 'isAvailable'>): MenuItem {
+  const current = getMenuItems();
+  const newItem: MenuItem = {
+    ...item,
+    id: `prod_${Date.now()}`,
+    isAvailable: true,
+  };
+  const updated = [...current, newItem];
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_menu_update', updated);
+  return newItem;
+}
+
+export function deleteCustomMenuItem(id: string): void {
+  const current = getMenuItems();
+  const updated = current.filter((it) => it.id !== id);
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_menu_update', updated);
+}
+
+// Flavours
 export function getFlavoursList(): ManagedFlavour[] {
   try {
-    const raw = localStorage.getItem(FLAVOURS_KEY);
-    if (!raw) {
-      const initial: ManagedFlavour[] = FLAVOURS.map((f) => ({ ...f, isAvailable: true }));
-      localStorage.setItem(FLAVOURS_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return FLAVOURS.map((f) => ({ ...f, isAvailable: true }));
-  }
+    const saved = localStorage.getItem(FLAVOURS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  const initial: ManagedFlavour[] = FLAVOURS.map((f) => ({ ...f, isAvailable: true }));
+  try {
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(initial));
+  } catch {}
+  return initial;
 }
 
-export function toggleFlavourAvailability(id: string): ManagedFlavour[] {
-  const list = getFlavoursList();
-  const updated = list.map((f) => (f.id === id ? { ...f, isAvailable: !f.isAvailable } : f));
-  localStorage.setItem(FLAVOURS_KEY, JSON.stringify(updated));
+export function toggleFlavourAvailability(id: string): void {
+  const current = getFlavoursList();
+  const updated = current.map((f) => (f.id === id ? { ...f, isAvailable: !f.isAvailable } : f));
+  try {
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(updated));
+  } catch {}
   broadcastUpdate('fryway_flavour_update', updated);
-  return updated;
 }
 
+export function addFlavour(flavour: Omit<ManagedFlavour, 'id' | 'isAvailable'>): ManagedFlavour {
+  const current = getFlavoursList();
+  const newFlavour: ManagedFlavour = {
+    ...flavour,
+    id: `flv_${Date.now()}`,
+    isAvailable: true,
+  };
+  const updated = [...current, newFlavour];
+  try {
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_flavour_update', updated);
+  return newFlavour;
+}
+
+export function editFlavour(id: string, updates: Partial<ManagedFlavour>): void {
+  const current = getFlavoursList();
+  const updated = current.map((f) => (f.id === id ? { ...f, ...updates } : f));
+  try {
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_flavour_update', updated);
+}
+
+export function deleteFlavour(id: string): void {
+  const current = getFlavoursList();
+  const updated = current.filter((f) => f.id !== id);
+  try {
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_flavour_update', updated);
+}
+
+// Sauces
 export function getSaucesList(): ManagedSauce[] {
   try {
-    const raw = localStorage.getItem(SAUCES_KEY);
-    if (!raw) {
-      const initial: ManagedSauce[] = SAUCES.map((s) => ({ ...s, isAvailable: true }));
-      localStorage.setItem(SAUCES_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return SAUCES.map((s) => ({ ...s, isAvailable: true }));
-  }
+    const saved = localStorage.getItem(SAUCES_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  const initial: ManagedSauce[] = SAUCES.map((s) => ({ ...s, isAvailable: true }));
+  try {
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(initial));
+  } catch {}
+  return initial;
 }
 
-export function toggleSauceAvailability(id: string): ManagedSauce[] {
-  const list = getSaucesList();
-  const updated = list.map((s) => (s.id === id ? { ...s, isAvailable: !s.isAvailable } : s));
-  localStorage.setItem(SAUCES_KEY, JSON.stringify(updated));
+export function toggleSauceAvailability(id: string): void {
+  const current = getSaucesList();
+  const updated = current.map((s) => (s.id === id ? { ...s, isAvailable: !s.isAvailable } : s));
+  try {
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(updated));
+  } catch {}
   broadcastUpdate('fryway_sauce_update', updated);
-  return updated;
 }
 
+export function addSauce(sauce: Omit<ManagedSauce, 'id' | 'isAvailable'>): ManagedSauce {
+  const current = getSaucesList();
+  const newSauce: ManagedSauce = {
+    ...sauce,
+    id: `sauce_${Date.now()}`,
+    isAvailable: true,
+  };
+  const updated = [...current, newSauce];
+  try {
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_sauce_update', updated);
+  return newSauce;
+}
+
+export function editSauce(id: string, updates: Partial<ManagedSauce>): void {
+  const current = getSaucesList();
+  const updated = current.map((s) => (s.id === id ? { ...s, ...updates } : s));
+  try {
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_sauce_update', updated);
+}
+
+export function deleteSauce(id: string): void {
+  const current = getSaucesList();
+  const updated = current.filter((s) => s.id !== id);
+  try {
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_sauce_update', updated);
+}
+
+// Extras
 export function getExtrasList(): ManagedExtra[] {
   try {
-    const raw = localStorage.getItem(EXTRAS_KEY);
-    if (!raw) {
-      const initial: ManagedExtra[] = EXTRAS.map((e) => ({ ...e, isAvailable: true }));
-      localStorage.setItem(EXTRAS_KEY, JSON.stringify(initial));
-      return initial;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return EXTRAS.map((e) => ({ ...e, isAvailable: true }));
-  }
+    const saved = localStorage.getItem(EXTRAS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  const initial: ManagedExtra[] = EXTRAS.map((e) => ({ ...e, isAvailable: true }));
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(initial));
+  } catch {}
+  return initial;
 }
 
-export function toggleExtraAvailability(id: string): ManagedExtra[] {
-  const list = getExtrasList();
-  const updated = list.map((e) => (e.id === id ? { ...e, isAvailable: !e.isAvailable } : e));
-  localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+export function toggleExtraAvailability(id: string): void {
+  const current = getExtrasList();
+  const updated = current.map((e) => (e.id === id ? { ...e, isAvailable: !e.isAvailable } : e));
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+  } catch {}
   broadcastUpdate('fryway_extra_update', updated);
-  return updated;
 }
 
-export function updateExtraPrice(id: string, price: number): ManagedExtra[] {
-  const list = getExtrasList();
-  const updated = list.map((e) => (e.id === id ? { ...e, price } : e));
-  localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+export function updateExtraPrice(id: string, price: number): void {
+  const current = getExtrasList();
+  const updated = current.map((e) => (e.id === id ? { ...e, price } : e));
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+  } catch {}
   broadcastUpdate('fryway_extra_update', updated);
-  return updated;
 }
 
-/**
- * Staff Management Store
- */
-const STAFF_KEY = 'fryway_staff_members_v1';
+export function addExtra(extra: Omit<ManagedExtra, 'id' | 'isAvailable'>): ManagedExtra {
+  const current = getExtrasList();
+  const newExtra: ManagedExtra = {
+    ...extra,
+    id: `extra_${Date.now()}`,
+    isAvailable: true,
+  };
+  const updated = [...current, newExtra];
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_extra_update', updated);
+  return newExtra;
+}
 
-export const DEFAULT_STAFF: StaffMember[] = [
-  { id: 'st_1', name: 'Malik Zeeshan', role: 'admin', pin: '7777', phone: '0300-1112233', status: 'active', joinedDate: '2024-01-15' },
-  { id: 'st_2', name: 'Chef Tariq Mehmood', role: 'kitchen', pin: '5555', phone: '0321-4445566', status: 'active', joinedDate: '2024-02-01' },
-  { id: 'st_3', name: 'Usman Ali', role: 'counter', pin: '3333', phone: '0333-7778899', status: 'active', joinedDate: '2024-03-10' },
-  { id: 'st_4', name: 'Hamza Khan', role: 'counter', pin: '2222', phone: '0345-9990011', status: 'active', joinedDate: '2024-04-05' },
+export function deleteExtra(id: string): void {
+  const current = getExtrasList();
+  const updated = current.filter((e) => e.id !== id);
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_extra_update', updated);
+}
+
+// ----------------------------------------------------
+// Operating Expenses Management
+// ----------------------------------------------------
+const INITIAL_EXPENSES: Expense[] = [
+  {
+    id: 'exp_01',
+    title: 'Grade-A Whole Potatoes (150 kg sack)',
+    category: 'potatoes_produce',
+    amount: 14500,
+    date: new Date().toISOString().split('T')[0],
+    time: '09:30 AM',
+    paymentMethod: 'cash',
+    notes: 'Direct from wholesale potato mandi',
+  },
+  {
+    id: 'exp_02',
+    title: 'Double-Fry High Smoke-Point Cooking Oil (40 Liters)',
+    category: 'cooking_oil',
+    amount: 22000,
+    date: new Date().toISOString().split('T')[0],
+    time: '10:15 AM',
+    paymentMethod: 'bank_transfer',
+    notes: 'Deep fryers refill',
+  },
+  {
+    id: 'exp_03',
+    title: 'Thermal Fries Boxes & Kraft Paper Bags (1,000 pcs)',
+    category: 'packaging',
+    amount: 8500,
+    date: new Date(Date.now() - 86400000).toISOString().split('T')[0],
+    time: '02:00 PM',
+    paymentMethod: 'cash',
+    notes: 'Custom branded Fryway packaging',
+  },
+  {
+    id: 'exp_04',
+    title: 'Dairy Cream, Mayo Base & Seasoning Restock',
+    category: 'sauces_spices',
+    amount: 9200,
+    date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0],
+    time: '11:00 AM',
+    paymentMethod: 'cash',
+    notes: 'Garlic mayo & cheese mayo batch prep',
+  },
+  {
+    id: 'exp_05',
+    title: 'Commercial LPG Cylinder Gas Refill',
+    category: 'utilities_gas',
+    amount: 16800,
+    date: new Date(Date.now() - 86400000 * 4).toISOString().split('T')[0],
+    time: '04:30 PM',
+    paymentMethod: 'cash',
+    notes: 'Twin fryers gas supply',
+  },
+  {
+    id: 'exp_06',
+    title: 'Delivery Bike Fuel Allowance (Bahria Town Riders)',
+    category: 'delivery_fuel',
+    amount: 4500,
+    date: new Date(Date.now() - 86400000 * 5).toISOString().split('T')[0],
+    time: '01:15 PM',
+    paymentMethod: 'petty_cash',
+    notes: 'Sector C, Jasmine, Tulip blocks',
+  },
+  {
+    id: 'exp_07',
+    title: 'Kitchen Line Fryers Bi-Weekly Stipend',
+    category: 'salaries',
+    amount: 42000,
+    date: new Date(Date.now() - 86400000 * 9).toISOString().split('T')[0],
+    time: '06:00 PM',
+    paymentMethod: 'bank_transfer',
+    notes: 'Staff salaries',
+  },
 ];
 
-export function getStaffMembers(): StaffMember[] {
+export function getExpenses(): Expense[] {
   try {
-    const raw = localStorage.getItem(STAFF_KEY);
-    if (!raw) {
-      localStorage.setItem(STAFF_KEY, JSON.stringify(DEFAULT_STAFF));
-      return DEFAULT_STAFF;
-    }
-    return JSON.parse(raw);
-  } catch {
-    return DEFAULT_STAFF;
-  }
+    const saved = localStorage.getItem(EXPENSES_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  try {
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(INITIAL_EXPENSES));
+  } catch {}
+  return INITIAL_EXPENSES;
 }
 
-export function addStaffMember(staff: Omit<StaffMember, 'id' | 'joinedDate'>): StaffMember {
-  const current = getStaffMembers();
-  const newStaff: StaffMember = {
-    ...staff,
-    id: 'st_' + Date.now(),
-    joinedDate: new Date().toISOString().split('T')[0],
+export function addExpense(expense: Omit<Expense, 'id'>): Expense {
+  const current = getExpenses();
+  const newExp: Expense = {
+    ...expense,
+    id: `exp_${Date.now()}`,
+    time: expense.time || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
   };
-  const updated = [...current, newStaff];
-  localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_staff_update', updated);
-  return newStaff;
+  const updated = [newExp, ...current];
+  try {
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_expense_update', updated);
+  return newExp;
 }
 
-export function toggleStaffStatus(id: string): StaffMember[] {
-  const current = getStaffMembers();
-  const updated = current.map((st) =>
-    st.id === id ? { ...st, status: (st.status === 'active' ? 'disabled' : 'active') as 'active' | 'disabled' } : st
-  );
-  localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_staff_update', updated);
-  return updated;
+export function deleteExpense(id: string): void {
+  const current = getExpenses();
+  const updated = current.filter((e) => e.id !== id);
+  try {
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_expense_update', updated);
 }
 
-export function updateStaffPin(id: string, pin: string): StaffMember[] {
-  const current = getStaffMembers();
-  const updated = current.map((st) => (st.id === id ? { ...st, pin } : st));
-  localStorage.setItem(STAFF_KEY, JSON.stringify(updated));
-  broadcastUpdate('fryway_staff_update', updated);
-  return updated;
+export function updateExpense(id: string, updates: Partial<Expense>): void {
+  const current = getExpenses();
+  const updated = current.map((e) => (e.id === id ? { ...e, ...updates } : e));
+  try {
+    localStorage.setItem(EXPENSES_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_expense_update', updated);
 }
 
-/**
- * Customer Directory Derived From Live & Historic Orders
- */
+// ----------------------------------------------------
+// Orders & Kitchen Flow Management
+// ----------------------------------------------------
+function getInitialOrders(): Order[] {
+  const now = Date.now();
+  return [
+    {
+      id: 'ord_sample_1',
+      orderNumber: 'FW-1024',
+      createdAt: new Date(now - 8 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      placedAtTimestamp: now - 8 * 60000,
+      orderType: 'takeaway',
+      customer: { name: 'Usman Chaudhry', phone: '0300-9876543' },
+      items: [
+        {
+          id: 'item_1',
+          productId: 'fries_medium',
+          name: 'Medium Hand-Cut Fries',
+          size: 'medium',
+          sizeLabel: 'Medium Fries',
+          style: 'masala_sauce',
+          flavour: { id: 'tikka', name: 'Tikka', description: '', category: 'spicy', heatLevel: 2 },
+          sauce: { id: 'garlic_mayo', name: 'Garlic Mayo', description: '', profile: 'creamy', heatLevel: 0 },
+          extras: [{ extraId: 'extra_dip', name: 'Extra Dip (Cheese Mayo)', price: 80, quantity: 1 }],
+          specialInstructions: 'Make it extra crisp!',
+          unitPrice: 530,
+          quantity: 2,
+          totalPrice: 1060,
+          image: MENU_PRODUCTS[1].image,
+        },
+      ],
+      subtotal: 1060,
+      deliveryFee: 0,
+      grandTotal: 1060,
+      paymentMethod: 'cash_on_pickup',
+      status: 'preparing',
+      estimatedMinutes: 15,
+      statusUpdates: [
+        { status: 'received', time: '08:35 PM', note: 'Counter order received' },
+        { status: 'preparing', time: '08:37 PM', note: 'Fresh double-frying underway' },
+      ],
+    },
+    {
+      id: 'ord_sample_2',
+      orderNumber: 'FW-1025',
+      createdAt: new Date(now - 14 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      placedAtTimestamp: now - 14 * 60000,
+      orderType: 'delivery',
+      customer: {
+        name: 'Fatima Zahra',
+        phone: '0321-4567890',
+        address: 'House #184, Sector C, Jasmine Block, Bahria Town Lahore',
+        deliveryNotes: 'Please ring bell twice and leave at porch table.',
+      },
+      items: [
+        {
+          id: 'item_2',
+          productId: 'fries_large',
+          name: 'Large Hand-Cut Fries',
+          size: 'large',
+          sizeLabel: 'Large Fries',
+          style: 'masala_sauce',
+          flavour: { id: 'mexican', name: 'Mexican', description: '', category: 'spicy', heatLevel: 2 },
+          sauce: { id: 'cheese_mayo', name: 'Cheese Mayo', description: '', profile: 'creamy', heatLevel: 0 },
+          extras: [
+            { extraId: 'ketchup_chilli_dip', name: 'Ketchup / Chilli Garlic Dip', price: 50, quantity: 2 },
+          ],
+          unitPrice: 700,
+          quantity: 1,
+          totalPrice: 700,
+          image: MENU_PRODUCTS[2].image,
+        },
+        {
+          id: 'item_3',
+          productId: 'fries_regular',
+          name: 'Regular Hand-Cut Fries',
+          size: 'regular',
+          sizeLabel: 'Regular Fries',
+          style: 'plain',
+          extras: [],
+          unitPrice: 230,
+          quantity: 1,
+          totalPrice: 230,
+          image: MENU_PRODUCTS[0].image,
+        },
+      ],
+      subtotal: 930,
+      deliveryFee: 120,
+      grandTotal: 1050,
+      paymentMethod: 'cash_on_delivery',
+      status: 'ready',
+      estimatedMinutes: 25,
+      statusUpdates: [
+        { status: 'received', time: '08:29 PM', note: 'Home delivery order received' },
+        { status: 'preparing', time: '08:32 PM', note: 'Frying & packing' },
+        { status: 'ready', time: '08:41 PM', note: 'Packed in thermal bag ready for rider' },
+      ],
+    },
+    {
+      id: 'ord_sample_3',
+      orderNumber: 'FW-1026',
+      createdAt: new Date(now - 3 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      placedAtTimestamp: now - 3 * 60000,
+      orderType: 'takeaway',
+      customer: { name: 'Dr. Tariq Mahmood', phone: '0333-8889900' },
+      items: [
+        {
+          id: 'item_4',
+          productId: 'fries_medium',
+          name: 'Medium Hand-Cut Fries',
+          size: 'medium',
+          sizeLabel: 'Medium Fries',
+          style: 'masala',
+          flavour: { id: 'butter_garlic', name: 'Butter Garlic', description: '', category: 'savory', heatLevel: 0 },
+          extras: [{ extraId: 'extra_dip', name: 'Extra Dip (Ranch)', price: 80, quantity: 1 }],
+          unitPrice: 450,
+          quantity: 1,
+          totalPrice: 450,
+          image: MENU_PRODUCTS[1].image,
+        },
+      ],
+      subtotal: 450,
+      deliveryFee: 0,
+      grandTotal: 450,
+      paymentMethod: 'card_at_counter',
+      status: 'received',
+      estimatedMinutes: 12,
+      statusUpdates: [{ status: 'received', time: '08:40 PM', note: 'New order entered kitchen queue' }],
+    },
+    {
+      id: 'ord_sample_4',
+      orderNumber: 'FW-1020',
+      createdAt: new Date(now - 55 * 60000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      placedAtTimestamp: now - 55 * 60000,
+      orderType: 'delivery',
+      customer: {
+        name: 'Ayesha Khan',
+        phone: '0315-7766554',
+        address: 'Sector C Commercial, Plaza 14, Bahria Town',
+      },
+      items: [
+        {
+          id: 'item_5',
+          productId: 'fries_large',
+          name: 'Large Hand-Cut Fries',
+          size: 'large',
+          sizeLabel: 'Large Fries',
+          style: 'masala_sauce',
+          flavour: { id: 'chicken_chat_pati', name: 'Chicken Chat Pati', description: '', category: 'spicy', heatLevel: 3 },
+          sauce: { id: 'hot_sauce', name: 'Hot Sauce', description: '', profile: 'hot', heatLevel: 3 },
+          extras: [],
+          unitPrice: 600,
+          quantity: 2,
+          totalPrice: 1200,
+          image: MENU_PRODUCTS[2].image,
+        },
+      ],
+      subtotal: 1200,
+      deliveryFee: 0, // Free delivery threshold met!
+      grandTotal: 1200,
+      paymentMethod: 'cash_on_delivery',
+      status: 'delivered',
+      estimatedMinutes: 30,
+      statusUpdates: [
+        { status: 'received', time: '07:48 PM', note: 'Received' },
+        { status: 'preparing', time: '07:52 PM', note: 'Prepared' },
+        { status: 'ready', time: '08:05 PM', note: 'Dispatched with rider' },
+        { status: 'delivered', time: '08:24 PM', note: 'Delivered successfully' },
+      ],
+    },
+  ];
+}
+
+export function getOrders(): Order[] {
+  try {
+    const saved = localStorage.getItem(ORDERS_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  const initial = getInitialOrders();
+  try {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(initial));
+  } catch {}
+  return initial;
+}
+
+export function addOrder(order: Order): Order {
+  const current = getOrders();
+  const updated = [order, ...current];
+  try {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_order_update', { order, action: 'added' });
+  audioAlerts.playNewOrderChime();
+  return order;
+}
+
+export function updateOrderStatus(orderId: string, status: OrderStatus, note?: string): void {
+  const current = getOrders();
+  const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const updated = current.map((ord) => {
+    if (ord.id !== orderId) return ord;
+
+    const statusUpdates = [
+      ...ord.statusUpdates,
+      {
+        status,
+        time: nowStr,
+        note: note || `Status transitioned to ${status}`,
+      },
+    ];
+
+    const patch: Partial<Order> = {
+      status,
+      statusUpdates,
+    };
+
+    if (status === 'preparing' && !ord.kitchenAcceptedAt) {
+      patch.kitchenAcceptedAt = Date.now();
+    }
+    if (status === 'ready' && !ord.readyAtTimestamp) {
+      patch.readyAtTimestamp = Date.now();
+    }
+    if ((status === 'completed' || status === 'delivered') && !ord.deliveredAtTimestamp) {
+      patch.deliveredAtTimestamp = Date.now();
+    }
+
+    return { ...ord, ...patch };
+  });
+
+  try {
+    localStorage.setItem(ORDERS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_order_update', { orderId, status });
+}
+
+export function getOrderById(orderId: string): Order | undefined {
+  const orders = getOrders();
+  return orders.find((o) => o.id === orderId || o.orderNumber === orderId);
+}
+
+// ----------------------------------------------------
+// Customer Directory & Analytics Helpers
+// ----------------------------------------------------
 export interface CustomerSummary {
   name: string;
   phone: string;
   address?: string;
-  totalOrders: number;
+  orderCount: number;
   totalSpent: number;
   lastOrderDate: string;
-  orders: Order[];
+  orderHistory: Order[];
 }
 
 export function getCustomerDirectory(): CustomerSummary[] {
-  const allOrders = getOrders();
-  const customerMap = new Map<string, CustomerSummary>();
+  const orders = getOrders();
+  const map = new Map<string, CustomerSummary>();
 
-  allOrders.forEach((ord) => {
-    const phone = ord.customer.phone.trim();
-    const key = phone || ord.customer.name.trim();
-    if (!key) return;
+  orders.forEach((ord) => {
+    const key = ord.customer.phone.replace(/\D/g, '') || ord.customer.name.toLowerCase();
+    const existing = map.get(key);
 
-    const existing = customerMap.get(key);
     if (!existing) {
-      customerMap.set(key, {
+      map.set(key, {
         name: ord.customer.name,
         phone: ord.customer.phone,
         address: ord.customer.address,
-        totalOrders: 1,
+        orderCount: 1,
         totalSpent: ord.grandTotal,
         lastOrderDate: ord.createdAt,
-        orders: [ord],
+        orderHistory: [ord],
       });
     } else {
-      existing.totalOrders += 1;
+      existing.orderCount += 1;
       existing.totalSpent += ord.grandTotal;
-      if (ord.customer.address && !existing.address) {
-        existing.address = ord.customer.address;
-      }
-      existing.orders.push(ord);
+      if (!existing.address && ord.customer.address) existing.address = ord.customer.address;
+      existing.orderHistory.push(ord);
     }
   });
 
-  return Array.from(customerMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
+  return Array.from(map.values()).sort((a, b) => b.totalSpent - a.totalSpent);
 }
 
+// ----------------------------------------------------
+// Product & Modifier Analytics (Derived from real orders)
+// ----------------------------------------------------
+export interface ItemRank {
+  name: string;
+  count: number;
+  revenue: number;
+}
+
+export function getPopularProductsStats(): ItemRank[] {
+  const orders = getOrders();
+  const tally: Record<string, { count: number; revenue: number }> = {};
+
+  orders.forEach((o) => {
+    o.items.forEach((item) => {
+      const key = `${item.sizeLabel || item.name}`;
+      if (!tally[key]) tally[key] = { count: 0, revenue: 0 };
+      tally[key].count += item.quantity;
+      tally[key].revenue += item.totalPrice;
+    });
+  });
+
+  return Object.entries(tally)
+    .map(([name, data]) => ({ name, count: data.count, revenue: data.revenue }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function getPopularFlavoursStats(): ItemRank[] {
+  const orders = getOrders();
+  const tally: Record<string, number> = {};
+
+  orders.forEach((o) => {
+    o.items.forEach((item) => {
+      if (item.flavour) {
+        tally[item.flavour.name] = (tally[item.flavour.name] || 0) + item.quantity;
+      }
+    });
+  });
+
+  return Object.entries(tally)
+    .map(([name, count]) => ({ name, count, revenue: count * 30 }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function getPopularSaucesStats(): ItemRank[] {
+  const orders = getOrders();
+  const tally: Record<string, number> = {};
+
+  orders.forEach((o) => {
+    o.items.forEach((item) => {
+      if (item.sauce) {
+        tally[item.sauce.name] = (tally[item.sauce.name] || 0) + item.quantity;
+      }
+    });
+  });
+
+  return Object.entries(tally)
+    .map(([name, count]) => ({ name, count, revenue: count * 80 }))
+    .sort((a, b) => b.count - a.count);
+}
+
+export function getPopularExtrasStats(): ItemRank[] {
+  const orders = getOrders();
+  const tally: Record<string, { count: number; revenue: number }> = {};
+
+  orders.forEach((o) => {
+    o.items.forEach((item) => {
+      item.extras.forEach((ex) => {
+        if (!tally[ex.name]) tally[ex.name] = { count: 0, revenue: 0 };
+        tally[ex.name].count += ex.quantity;
+        tally[ex.name].revenue += ex.price * ex.quantity;
+      });
+    });
+  });
+
+  return Object.entries(tally)
+    .map(([name, data]) => ({ name, count: data.count, revenue: data.revenue }))
+    .sort((a, b) => b.count - a.count);
+}

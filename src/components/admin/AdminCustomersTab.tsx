@@ -34,37 +34,37 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
   return (
     <div className="space-y-6">
       {/* Top Header & Metrics */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-800">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs">
         <div>
-          <h2 className="text-lg font-black text-white font-['Syne',sans-serif] uppercase">
+          <h2 className="text-xl font-black text-neutral-900 uppercase tracking-tight">
             Customer Directory & Profiles
           </h2>
-          <p className="text-xs text-neutral-400">
-            Automated customer profiling tracked from live takeaway, dine-in, and Bahria Town delivery orders.
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Automated customer profiling compiled dynamically from all takeaway and Bahria Town delivery orders.
           </p>
         </div>
 
         <div className="flex items-center gap-3 text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-neutral-950 border border-neutral-800">
+          <div className="px-3.5 py-1.5 rounded-xl bg-neutral-50 border border-neutral-200">
             <span className="text-neutral-400 block text-[10px] uppercase font-bold">Total Clients</span>
-            <span className="font-black text-white text-sm">{customers.length}</span>
+            <span className="font-black text-neutral-900 text-sm">{customers.length}</span>
           </div>
-          <div className="px-3 py-1.5 rounded-xl bg-neutral-950 border border-neutral-800">
-            <span className="text-neutral-400 block text-[10px] uppercase font-bold">Lifetime Value</span>
-            <span className="font-black text-emerald-400 text-sm">{formatPKR(totalRevenueFromCustomers)}</span>
+          <div className="px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200">
+            <span className="text-emerald-800 block text-[10px] uppercase font-bold">Combined Spend</span>
+            <span className="font-black text-emerald-900 text-sm">{formatPKR(totalRevenueFromCustomers)}</span>
           </div>
         </div>
       </div>
 
       {/* Search Input */}
       <div className="relative">
-        <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by customer name, phone number, or delivery sector..."
-          className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 transition-colors"
+          className="w-full bg-white border border-neutral-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 shadow-2xs"
         />
       </div>
 
@@ -73,8 +73,10 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
         {/* Customer Cards Column */}
         <div className="lg:col-span-2 space-y-3">
           {filtered.length === 0 ? (
-            <div className="p-8 text-center bg-neutral-900/40 rounded-2xl border border-neutral-800 text-neutral-400 text-xs">
-              No customer records matching "{search}". Customer profiles are generated automatically when orders are placed.
+            <div className="p-12 text-center bg-white rounded-2xl border border-neutral-200 text-neutral-400 text-xs">
+              <Users className="w-8 h-8 mx-auto mb-2 opacity-40 text-neutral-400" />
+              <span className="font-bold text-neutral-700 block text-sm">No Customer Records</span>
+              <span>No customer records matching "{search}". Customer profiles are generated automatically when orders are placed.</span>
             </div>
           ) : (
             filtered.map((cust) => {
@@ -85,30 +87,30 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
                   onClick={() => setSelectedCustomer(cust)}
                   className={`p-4 rounded-2xl border transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-neutral-900 border-amber-400/80 shadow-md shadow-amber-400/10'
-                      : 'bg-neutral-900/60 border-neutral-800 hover:border-neutral-700'
+                      ? 'bg-emerald-50/60 border-emerald-700 shadow-sm'
+                      : 'bg-white border-neutral-200/90 hover:border-neutral-300'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-amber-400/10 text-amber-400 flex items-center justify-center font-black text-sm">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-800 text-white flex items-center justify-center font-black text-sm">
                         {cust.name.slice(0, 2).toUpperCase()}
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-bold text-white text-sm">{cust.name}</span>
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-neutral-800 text-neutral-300">
-                            {cust.totalOrders} {cust.totalOrders === 1 ? 'Order' : 'Orders'}
+                          <span className="font-bold text-neutral-900 text-sm">{cust.name}</span>
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black bg-neutral-100 text-neutral-700">
+                            {cust.orderCount} {cust.orderCount === 1 ? 'Order' : 'Orders'}
                           </span>
                         </div>
-                        <div className="flex items-center gap-3 text-xs text-neutral-400 mt-1">
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3 text-neutral-500" />
+                        <div className="flex items-center gap-3 text-xs text-neutral-500 mt-1">
+                          <span className="flex items-center gap-1 font-mono">
+                            <Phone className="w-3 h-3 text-neutral-400" />
                             {cust.phone}
                           </span>
                           {cust.address && (
                             <span className="flex items-center gap-1 line-clamp-1">
-                              <MapPin className="w-3 h-3 text-neutral-500" />
+                              <MapPin className="w-3 h-3 text-neutral-400" />
                               {cust.address}
                             </span>
                           )}
@@ -117,8 +119,8 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
                     </div>
 
                     <div className="text-right shrink-0">
-                      <span className="text-[10px] text-neutral-500 uppercase font-bold block">Total Spend</span>
-                      <span className="font-black text-amber-300 text-sm">{formatPKR(cust.totalSpent)}</span>
+                      <span className="text-[10px] text-neutral-400 uppercase font-bold block">Total Spend</span>
+                      <span className="font-black text-emerald-900 text-sm">{formatPKR(cust.totalSpent)}</span>
                     </div>
                   </div>
                 </div>
@@ -130,49 +132,47 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
         {/* Selected Customer Order History Sidebar */}
         <div className="lg:col-span-1">
           {selectedCustomer ? (
-            <div className="bg-neutral-900 p-5 rounded-2xl border border-neutral-800 sticky top-24 space-y-4">
-              <div className="flex items-start justify-between border-b border-neutral-800 pb-3">
+            <div className="bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs sticky top-24 space-y-4">
+              <div className="flex items-start justify-between border-b border-neutral-100 pb-3">
                 <div>
-                  <h3 className="font-bold text-white text-sm">{selectedCustomer.name}</h3>
-                  <span className="text-xs text-neutral-400">{selectedCustomer.phone}</span>
+                  <h3 className="font-bold text-neutral-900 text-sm">{selectedCustomer.name}</h3>
+                  <span className="text-xs text-neutral-500 font-mono">{selectedCustomer.phone}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-[10px] text-neutral-500 uppercase block font-bold">Spent</span>
-                  <span className="text-emerald-400 font-black text-sm">{formatPKR(selectedCustomer.totalSpent)}</span>
+                  <span className="text-[10px] text-neutral-400 uppercase block font-bold">Spent</span>
+                  <span className="text-emerald-900 font-black text-sm">{formatPKR(selectedCustomer.totalSpent)}</span>
                 </div>
               </div>
 
               {selectedCustomer.address && (
-                <div className="p-2.5 rounded-xl bg-neutral-950 border border-neutral-800 text-xs text-neutral-300">
-                  <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-0.5">Delivery Address</span>
+                <div className="p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-xs text-neutral-700">
+                  <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-0.5">Delivery Address</span>
                   {selectedCustomer.address}
                 </div>
               )}
 
               <div>
-                <span className="text-xs font-bold text-neutral-400 block mb-2">
-                  Order History ({selectedCustomer.orders.length})
+                <span className="text-xs font-bold text-neutral-700 block mb-2">
+                  Order History ({selectedCustomer.orderHistory.length})
                 </span>
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
-                  {selectedCustomer.orders.map((ord) => (
+                  {selectedCustomer.orderHistory.map((ord) => (
                     <div
                       key={ord.id}
-                      className="p-3 rounded-xl bg-neutral-950 border border-neutral-800/80 text-xs space-y-1.5"
+                      className="p-3 rounded-xl bg-neutral-50 border border-neutral-200 text-xs space-y-1.5"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-amber-300">{ord.orderNumber}</span>
-                        <span className="text-[10px] text-neutral-400 capitalize">
-                          {ord.orderType.replace('_', ' ')}
+                        <span className="font-mono font-bold text-neutral-900">#{ord.orderNumber}</span>
+                        <span className="text-[10px] font-bold uppercase text-emerald-800">
+                          {ord.orderType}
                         </span>
                       </div>
-                      <div className="text-[11px] text-neutral-400">
-                        {ord.items.map((it) => `${it.quantity}x ${it.sizeLabel}`).join(', ')}
+                      <div className="text-[11px] text-neutral-600">
+                        {ord.items.map((it) => `${it.quantity}× ${it.sizeLabel || it.name}`).join(', ')}
                       </div>
-                      <div className="flex items-center justify-between pt-1 border-t border-neutral-900 text-[11px]">
-                        <span className="text-neutral-500">
-                          {new Date(ord.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
-                        </span>
-                        <span className="font-bold text-white">{formatPKR(ord.grandTotal)}</span>
+                      <div className="flex items-center justify-between pt-1 border-t border-neutral-200/80 text-[11px]">
+                        <span className="text-neutral-500">{ord.createdAt}</span>
+                        <span className="font-bold text-neutral-900">{formatPKR(ord.grandTotal)}</span>
                       </div>
                     </div>
                   ))}
@@ -180,8 +180,8 @@ export const AdminCustomersTab: React.FC<AdminCustomersTabProps> = ({ customers 
               </div>
             </div>
           ) : (
-            <div className="bg-neutral-900/40 p-6 rounded-2xl border border-neutral-800/80 text-center text-xs text-neutral-500">
-              Select a customer to view their delivery addresses and past orders history.
+            <div className="bg-white p-6 rounded-2xl border border-neutral-200 text-center text-xs text-neutral-400">
+              Select a customer to inspect their delivery addresses and past order history.
             </div>
           )}
         </div>

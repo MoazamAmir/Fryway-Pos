@@ -98,35 +98,25 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   const timeElapsedSeconds = Math.max(0, totalEstSeconds - secondsRemaining);
   const progressPercent = Math.min(100, Math.max(8, Math.round((timeElapsedSeconds / totalEstSeconds) * 100)));
 
-  // Delivery status steps vs Takeaway vs Dine-in
+  // Delivery status steps vs Takeaway steps
   const deliverySteps: { status: OrderStatus; label: string; desc: string; icon: any }[] = [
-    { status: 'received', label: 'Order Confirmed', desc: 'Order received by Fryway kitchen system', icon: Clock },
-    { status: 'preparing', label: 'Hand-Cutting & Double Frying', desc: 'Fresh potatoes cut and frying at 180°C', icon: Flame },
-    { status: 'ready', label: 'Seasoned & Packed Hot', desc: 'Tossed in seasoning and sealed in thermal box', icon: PackageCheck },
-    { status: 'out_for_delivery', label: 'Rider on the Way', desc: 'Bike dispatched across Bahria Town', icon: Bike },
-    { status: 'delivered', label: 'Delivered', desc: 'Delivered to your door. Enjoy hot & crispy!', icon: CheckCircle2 },
+    { status: 'received', label: 'Received', desc: 'Order placed and sent to Fryway system', icon: Clock },
+    { status: 'confirmed', label: 'Confirmed', desc: 'Order verified by staff', icon: CheckCircle2 },
+    { status: 'preparing', label: 'Preparing', desc: 'Double-frying fresh hand-cut potatoes at 180°C', icon: Flame },
+    { status: 'ready', label: 'Ready', desc: 'Tossed in seasoning & packed in thermal bag', icon: PackageCheck },
+    { status: 'out_for_delivery', label: 'Out for Delivery', desc: 'Dispatched with Bahria Town rider', icon: Bike },
+    { status: 'delivered', label: 'Delivered', desc: 'Delivered hot & crispy to your door!', icon: CheckCircle2 },
   ];
 
   const takeawaySteps: { status: OrderStatus; label: string; desc: string; icon: any }[] = [
-    { status: 'received', label: 'Order Confirmed', desc: 'Kitchen received your takeaway ticket', icon: Clock },
-    { status: 'preparing', label: 'Fresh Frying', desc: 'Sizzling hot in our signature double-fryers', icon: Flame },
-    { status: 'ready', label: 'Ready for Counter Pickup', desc: 'Packed hot and waiting at pickup counter', icon: Store },
-    { status: 'completed', label: 'Picked Up', desc: 'Collected at counter. Have a wonderful meal!', icon: CheckCircle2 },
+    { status: 'received', label: 'Received', desc: 'Order placed and sent to kitchen', icon: Clock },
+    { status: 'confirmed', label: 'Confirmed', desc: 'Order confirmed by counter staff', icon: CheckCircle2 },
+    { status: 'preparing', label: 'Preparing', desc: 'Frying fresh hand-cut potatoes to golden crunch', icon: Flame },
+    { status: 'ready', label: 'Ready', desc: 'Packed sizzling hot at pickup counter', icon: Store },
+    { status: 'completed', label: 'Completed', desc: 'Collected at counter. Enjoy authentic fries!', icon: CheckCircle2 },
   ];
 
-  const dineInSteps: { status: OrderStatus; label: string; desc: string; icon: any }[] = [
-    { status: 'received', label: 'Table Order Sent', desc: `Sent by ${currentOrder.waiterName || 'Waiter'} to Kitchen`, icon: Clock },
-    { status: 'preparing', label: 'Frying Sizzle', desc: 'Double-frying and seasoning in wok', icon: Flame },
-    { status: 'ready', label: 'Fresh at Counter', desc: `Ready for ${currentOrder.waiterName || 'Waiter'} table service`, icon: ChefHat },
-    { status: 'completed', label: 'Served at Table', desc: `Served at ${currentOrder.tableNumber || 'Table'}. Enjoy!`, icon: CheckCircle2 },
-  ];
-
-  const activeSteps =
-    currentOrder.orderType === 'delivery'
-      ? deliverySteps
-      : currentOrder.orderType === 'dine_in'
-      ? dineInSteps
-      : takeawaySteps;
+  const activeSteps = currentOrder.orderType === 'delivery' ? deliverySteps : takeawaySteps;
 
   const currentStepIndex = activeSteps.findIndex((s) => s.status === currentOrder.status);
 
@@ -139,15 +129,13 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
   const handleAdvanceStatus = () => {
     const nextIndex = (currentStepIndex + 1) % activeSteps.length;
     const nextStatus = activeSteps[nextIndex].status;
-    const updated = updateOrderStatus(currentOrder.id, nextStatus, `Simulated status transition to ${nextStatus}`);
-    if (updated) {
-      setCurrentOrder(updated);
-      if (nextStatus === 'delivered' || nextStatus === 'completed') {
-        setSecondsRemaining(0);
-      } else {
-        // adjust time remaining downwards
-        setSecondsRemaining((prev) => Math.max(60, Math.floor(prev * 0.5)));
-      }
+    updateOrderStatus(currentOrder.id, nextStatus, `Simulated status transition to ${nextStatus}`);
+    setCurrentOrder((prev) => (prev ? { ...prev, status: nextStatus } : null));
+    if (nextStatus === 'delivered' || nextStatus === 'completed') {
+      setSecondsRemaining(0);
+    } else {
+      // adjust time remaining downwards
+      setSecondsRemaining((prev) => Math.max(60, Math.floor(prev * 0.5)));
     }
   };
 
@@ -341,8 +329,6 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
                 <div className="flex items-center gap-2">
                   {currentOrder.orderType === 'delivery' ? (
                     <Bike className="w-5 h-5 text-emerald-800" />
-                  ) : currentOrder.orderType === 'dine_in' ? (
-                    <ChefHat className="w-5 h-5 text-emerald-800" />
                   ) : (
                     <Store className="w-5 h-5 text-emerald-800" />
                   )}
@@ -350,17 +336,15 @@ export const OrderConfirmationModal: React.FC<OrderConfirmationModalProps> = ({
                     <span className="text-xs font-bold text-neutral-900 capitalize block">
                       {currentOrder.orderType === 'delivery'
                         ? 'Home Delivery'
-                        : currentOrder.orderType === 'dine_in'
-                        ? `Dine-in (${currentOrder.tableNumber || 'Table'})`
                         : 'Takeaway Counter Pickup'}
                     </span>
                     <span className="text-[11px] text-neutral-500">
                       Payment:{' '}
                       {currentOrder.paymentMethod === 'cash_on_delivery'
                         ? 'Cash on Delivery'
-                        : currentOrder.paymentMethod === 'cash_at_table'
-                        ? 'Pay at Table'
-                        : 'Cash at Counter'}
+                        : currentOrder.paymentMethod === 'card_at_counter'
+                        ? 'Card at Counter'
+                        : 'Cash on Pickup'}
                     </span>
                   </div>
                 </div>

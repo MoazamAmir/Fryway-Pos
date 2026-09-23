@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import {
   ShoppingBag,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   Bike,
   Store,
-  ChefHat,
-  XCircle,
   Phone,
   MapPin,
+  Flame,
+  PackageCheck,
+  XCircle,
+  Eye,
+  AlertCircle,
 } from 'lucide-react';
-import { Order, OrderStatus } from '../../types';
+import { Order, OrderStatus, OrderType } from '../../types';
 import { updateOrderStatus } from '../../lib/restaurantStore';
 import { formatPKR } from '../../lib/pricing';
 
@@ -25,9 +27,9 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
+  const [selectedOrderDetail, setSelectedOrderDetail] = useState<Order | null>(null);
 
   const filteredOrders = orders.filter((ord) => {
-    // Search filter
     const q = search.toLowerCase();
     const matchesSearch =
       !search ||
@@ -36,7 +38,6 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
       ord.customer.phone.includes(q) ||
       (ord.customer.address && ord.customer.address.toLowerCase().includes(q));
 
-    // Status filter
     let matchesStatus = true;
     if (statusFilter !== 'all') {
       if (statusFilter === 'pending') {
@@ -46,7 +47,6 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
       }
     }
 
-    // Type filter
     let matchesType = true;
     if (typeFilter !== 'all') {
       matchesType = ord.orderType === typeFilter;
@@ -58,47 +58,50 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     updateOrderStatus(orderId, newStatus, `Updated via Admin Console`);
     if (onOrderUpdated) onOrderUpdated();
+    if (selectedOrderDetail && selectedOrderDetail.id === orderId) {
+      setSelectedOrderDetail((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-neutral-900/60 p-4 rounded-2xl border border-neutral-800">
+      {/* Top Header Card */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs">
         <div>
-          <h2 className="text-lg font-black text-white font-['Syne',sans-serif] uppercase">
-            Order Management & Live Queue
+          <h2 className="text-xl font-black text-neutral-900 uppercase tracking-tight">
+            Orders Management
           </h2>
-          <p className="text-xs text-neutral-400">
-            Real-time tracking, customer details, and instant status progression for all counter takeaway and delivery orders.
+          <p className="text-xs text-neutral-500 mt-0.5">
+            Real-time tracking, customer dispatch, and instant status updates for Takeaway & Home Delivery orders.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-neutral-400">Total Filtered:</span>
-          <span className="px-2.5 py-1 rounded-xl bg-amber-400 text-neutral-950 font-black text-xs">
-            {filteredOrders.length}
+          <span className="text-xs text-neutral-500 font-semibold">Total Filtered:</span>
+          <span className="px-3 py-1 rounded-xl bg-emerald-800 text-white font-black text-xs shadow-xs">
+            {filteredOrders.length} Orders
           </span>
         </div>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col md:flex-row gap-3">
+      <div className="flex flex-col lg:flex-row gap-3">
         {/* Search */}
         <div className="relative flex-1">
-          <Search className="w-4 h-4 text-neutral-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by order # (e.g. FW-1024), customer name, phone, address..."
-            className="w-full bg-neutral-900 border border-neutral-800 rounded-xl pl-10 pr-4 py-2.5 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400 transition-colors"
+            className="w-full bg-white border border-neutral-200 rounded-xl pl-10 pr-4 py-2.5 text-xs text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-emerald-700 shadow-2xs"
           />
         </div>
 
         {/* Status Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto bg-neutral-900 p-1 rounded-xl border border-neutral-800 shrink-0">
+        <div className="flex items-center gap-1.5 overflow-x-auto bg-neutral-100/80 p-1 rounded-xl border border-neutral-200 shrink-0">
           {[
-            { id: 'all', label: 'All Orders' },
+            { id: 'all', label: 'All Status' },
             { id: 'pending', label: 'Pending' },
             { id: 'preparing', label: 'Preparing' },
             { id: 'ready', label: 'Ready' },
@@ -108,10 +111,10 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
             <button
               key={st.id}
               onClick={() => setStatusFilter(st.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 statusFilter === st.id
-                  ? 'bg-amber-400 text-neutral-950 font-black'
-                  : 'text-neutral-400 hover:text-white'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-white'
               }`}
             >
               {st.label}
@@ -120,19 +123,19 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
         </div>
 
         {/* Channel Filters */}
-        <div className="flex items-center gap-1.5 bg-neutral-900 p-1 rounded-xl border border-neutral-800 shrink-0">
+        <div className="flex items-center gap-1.5 bg-neutral-100/80 p-1 rounded-xl border border-neutral-200 shrink-0">
           {[
-            { id: 'all', label: 'All Types' },
+            { id: 'all', label: 'All Channels' },
             { id: 'takeaway', label: 'Takeaway' },
             { id: 'delivery', label: 'Delivery' },
           ].map((tp) => (
             <button
               key={tp.id}
               onClick={() => setTypeFilter(tp.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap cursor-pointer ${
                 typeFilter === tp.id
-                  ? 'bg-emerald-500 text-neutral-950 font-black'
-                  : 'text-neutral-400 hover:text-white'
+                  ? 'bg-emerald-800 text-white shadow-xs'
+                  : 'text-neutral-600 hover:text-neutral-900 hover:bg-white'
               }`}
             >
               {tp.label}
@@ -141,170 +144,299 @@ export const AdminOrdersTab: React.FC<AdminOrdersTabProps> = ({ orders, onOrderU
         </div>
       </div>
 
-      {/* Orders Cards Grid */}
-      {filteredOrders.length === 0 ? (
-        <div className="p-12 text-center bg-neutral-900/40 rounded-2xl border border-neutral-800 text-neutral-400 text-xs">
-          No orders found matching the selected search query and filters.
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredOrders.map((ord) => {
-            const isDelivery = ord.orderType === 'delivery';
-            const isCompleted = ord.status === 'completed' || ord.status === 'delivered';
-            const isCancelled = ord.status === 'cancelled';
-
-            return (
-              <div
-                key={ord.id}
-                className={`p-5 rounded-2xl border transition-all space-y-4 ${
-                  isCompleted
-                    ? 'bg-neutral-900/50 border-neutral-800/80 opacity-80'
-                    : isCancelled
-                    ? 'bg-rose-950/20 border-rose-900/40 opacity-70'
-                    : 'bg-neutral-900 border-neutral-800 hover:border-neutral-700 shadow-lg'
-                }`}
-              >
-                {/* Order Card Header */}
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono font-black text-amber-300 text-base">
-                        #{ord.orderNumber}
-                      </span>
-                      <span
-                        className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase flex items-center gap-1 ${
-                          isDelivery
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                        }`}
-                      >
-                        {isDelivery ? <Bike className="w-3 h-3" /> : <Store className="w-3 h-3" />}
-                        {isDelivery ? 'Delivery' : 'Takeaway'}
-                      </span>
-                    </div>
-                    <span className="text-[11px] text-neutral-400 block mt-0.5">
-                      Placed at: {new Date(ord.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} •{' '}
-                      {new Date(ord.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
+      {/* Orders Table Container */}
+      <div className="bg-white rounded-2xl border border-neutral-200/90 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse text-xs">
+            <thead>
+              <tr className="bg-neutral-50/90 text-neutral-500 font-bold border-b border-neutral-200">
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Order</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Type</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Customer</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Items Summary</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Total</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider">Status</th>
+                <th className="py-3 px-4 uppercase text-[10px] tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-neutral-100">
+              {filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-neutral-400">
+                    <ShoppingBag className="w-8 h-8 mx-auto mb-2 opacity-40 text-neutral-400" />
+                    <span className="font-bold text-sm block text-neutral-700">No Orders Found</span>
+                    <span className="text-xs text-neutral-500">
+                      No matching takeaway or delivery orders match your filters.
                     </span>
-                  </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredOrders.map((order) => {
+                  const isReady = order.status === 'ready';
+                  const isPrep = order.status === 'preparing';
+                  const isReceived = order.status === 'received' || order.status === 'confirmed';
+                  const isCompleted = order.status === 'completed' || order.status === 'delivered';
+                  const isCancelled = order.status === 'cancelled';
 
-                  <div className="text-right">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                        ord.status === 'ready'
-                          ? 'bg-amber-400 text-neutral-950 animate-pulse'
-                          : ord.status === 'preparing'
-                          ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                          : ord.status === 'received' || ord.status === 'confirmed'
-                          ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                          : ord.status === 'cancelled'
-                          ? 'bg-rose-900/40 text-rose-300'
-                          : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                      }`}
-                    >
-                      {ord.status.replace(/_/g, ' ')}
-                    </span>
-                    <span className="text-xs font-black text-white block mt-1">
-                      {formatPKR(ord.grandTotal)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Customer Details */}
-                <div className="p-3 rounded-xl bg-neutral-950 border border-neutral-800/80 text-xs space-y-1">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white">{ord.customer.name}</span>
-                    <a
-                      href={`tel:${ord.customer.phone}`}
-                      className="text-amber-400 hover:underline flex items-center gap-1 text-[11px]"
-                    >
-                      <Phone className="w-3 h-3" />
-                      {ord.customer.phone}
-                    </a>
-                  </div>
-                  {ord.customer.address && (
-                    <div className="text-neutral-400 text-[11px] flex items-start gap-1">
-                      <MapPin className="w-3 h-3 text-neutral-500 shrink-0 mt-0.5" />
-                      <span>{ord.customer.address}</span>
-                    </div>
-                  )}
-                  {ord.customer.deliveryNotes && (
-                    <div className="text-amber-200/90 text-[10px] italic">
-                      Note: "{ord.customer.deliveryNotes}"
-                    </div>
-                  )}
-                </div>
-
-                {/* Itemized Basket */}
-                <div className="space-y-1.5 text-xs">
-                  {ord.items.map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-start justify-between gap-2 p-2 rounded-lg bg-neutral-950/60 border border-neutral-900"
-                    >
-                      <div>
-                        <div className="font-bold text-neutral-200">
-                          {item.quantity}x {item.sizeLabel}
+                  return (
+                    <tr key={order.id} className="hover:bg-neutral-50/60 transition-colors">
+                      {/* Order Number & Placed Time */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-black text-neutral-900 font-mono text-sm">
+                          #{order.orderNumber}
                         </div>
-                        <div className="text-[10px] text-neutral-400">
-                          {item.style === 'plain'
-                            ? 'Plain Salted'
-                            : `${item.flavour?.name || 'No Flavour'} + ${item.sauce?.name || 'No Sauce'}`}
-                          {item.extras && item.extras.length > 0 && (
-                            <span className="text-amber-300 ml-1">
-                              • +{item.extras.map((e) => `${e.quantity}x ${e.name}`).join(', ')}
-                            </span>
+                        <div className="text-[11px] text-neutral-400 mt-0.5 flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-neutral-400" />
+                          <span>{order.createdAt}</span>
+                        </div>
+                      </td>
+
+                      {/* Order Type */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            order.orderType === 'delivery'
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          }`}
+                        >
+                          {order.orderType === 'delivery' ? (
+                            <>
+                              <Bike className="w-3 h-3" />
+                              <span>Delivery</span>
+                            </>
+                          ) : (
+                            <>
+                              <Store className="w-3 h-3" />
+                              <span>Takeaway</span>
+                            </>
+                          )}
+                        </span>
+                      </td>
+
+                      {/* Customer Info */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-neutral-900">{order.customer.name}</div>
+                        <div className="text-[11px] text-neutral-500 font-mono flex items-center gap-1 mt-0.5">
+                          <Phone className="w-3 h-3 text-neutral-400" />
+                          <span>{order.customer.phone}</span>
+                        </div>
+                        {order.customer.address && (
+                          <div className="text-[11px] text-neutral-500 truncate max-w-[200px] mt-0.5" title={order.customer.address}>
+                            <MapPin className="w-3 h-3 inline text-neutral-400 mr-1" />
+                            {order.customer.address}
+                          </div>
+                        )}
+                      </td>
+
+                      {/* Items */}
+                      <td className="py-3.5 px-4 max-w-[240px]">
+                        <div className="truncate font-medium text-neutral-800">
+                          {order.items
+                            .map((it) => `${it.quantity}× ${it.sizeLabel || it.name}`)
+                            .join(', ')}
+                        </div>
+                        <div className="text-[11px] text-neutral-500 truncate mt-0.5">
+                          {order.items
+                            .map((it) => [it.flavour?.name, it.sauce?.name].filter(Boolean).join(' + '))
+                            .filter(Boolean)
+                            .join(' | ')}
+                        </div>
+                      </td>
+
+                      {/* Total */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <div className="font-black text-neutral-900 text-sm">
+                          {formatPKR(order.grandTotal)}
+                        </div>
+                        <div className="text-[10px] text-neutral-400 capitalize">
+                          {order.paymentMethod.replace(/_/g, ' ')}
+                        </div>
+                      </td>
+
+                      {/* Status Badge */}
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                            isCompleted
+                              ? 'bg-neutral-100 text-neutral-700 border border-neutral-200'
+                              : isReady
+                              ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                              : isPrep
+                              ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                              : isCancelled
+                              ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                              : 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+                          }`}
+                        >
+                          {isPrep && <Flame className="w-3 h-3 text-amber-600" />}
+                          {isReady && <PackageCheck className="w-3 h-3 text-emerald-700" />}
+                          {isCompleted && <CheckCircle2 className="w-3 h-3 text-neutral-600" />}
+                          {isCancelled && <XCircle className="w-3 h-3 text-rose-600" />}
+                          <span>{order.status.replace(/_/g, ' ')}</span>
+                        </span>
+                      </td>
+
+                      {/* Quick Status Action Controls */}
+                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setSelectedOrderDetail(order)}
+                            className="p-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-neutral-700 transition-colors cursor-pointer"
+                            title="View Full Ticket Details"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+
+                          {isReceived && (
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'preparing')}
+                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-white font-bold text-[11px] transition-all cursor-pointer"
+                            >
+                              Prep
+                            </button>
+                          )}
+
+                          {isPrep && (
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'ready')}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-[11px] transition-all cursor-pointer"
+                            >
+                              Ready
+                            </button>
+                          )}
+
+                          {isReady && (
+                            <button
+                              onClick={() =>
+                                handleStatusChange(
+                                  order.id,
+                                  order.orderType === 'delivery' ? 'delivered' : 'completed'
+                                )
+                              }
+                              className="px-2.5 py-1 rounded-lg bg-neutral-900 hover:bg-black text-white font-bold text-[11px] transition-all cursor-pointer"
+                            >
+                              Complete
+                            </button>
+                          )}
+
+                          {!isCompleted && !isCancelled && (
+                            <button
+                              onClick={() => handleStatusChange(order.id, 'cancelled')}
+                              className="p-1.5 rounded-lg text-neutral-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Cancel Order"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                            </button>
                           )}
                         </div>
-                      </div>
-                      <span className="font-bold text-neutral-300 text-xs">{formatPKR(item.totalPrice)}</span>
-                    </div>
-                  ))}
-                </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
 
-                {/* Status Progression Buttons */}
-                {!isCompleted && !isCancelled && (
-                  <div className="pt-2 border-t border-neutral-800/80 flex flex-wrap gap-2">
-                    {ord.status === 'received' || ord.status === 'confirmed' ? (
-                      <button
-                        onClick={() => handleStatusChange(ord.id, 'preparing')}
-                        className="flex-1 py-2 px-3 rounded-xl bg-orange-500 hover:bg-orange-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all"
-                      >
-                        Start Preparing
-                      </button>
-                    ) : null}
-
-                    {ord.status === 'preparing' ? (
-                      <button
-                        onClick={() => handleStatusChange(ord.id, 'ready')}
-                        className="flex-1 py-2 px-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all"
-                      >
-                        Mark Ready For Pickup
-                      </button>
-                    ) : null}
-
-                    {ord.status === 'ready' ? (
-                      <button
-                        onClick={() =>
-                          handleStatusChange(ord.id, isDelivery ? 'delivered' : 'completed')
-                        }
-                        className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-xs uppercase tracking-wider transition-all"
-                      >
-                        Complete Order
-                      </button>
-                    ) : null}
-
-                    <button
-                      onClick={() => handleStatusChange(ord.id, 'cancelled')}
-                      className="py-2 px-3 rounded-xl bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 font-bold text-xs transition-colors border border-rose-900/60"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+      {/* Detail Modal */}
+      {selectedOrderDetail && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-6 max-w-lg w-full shadow-2xl border border-neutral-200 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800">
+                  Ticket Details
+                </span>
+                <h3 className="text-lg font-black text-neutral-900 font-mono">
+                  #{selectedOrderDetail.orderNumber}
+                </h3>
               </div>
-            );
-          })}
+              <button
+                onClick={() => setSelectedOrderDetail(null)}
+                className="w-8 h-8 rounded-full bg-neutral-100 hover:bg-neutral-200 text-neutral-700 flex items-center justify-center cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Customer & Address */}
+            <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-200/80 space-y-1.5 text-xs">
+              <div className="flex justify-between font-bold text-neutral-900">
+                <span>{selectedOrderDetail.customer.name}</span>
+                <span className="font-mono text-emerald-800">{selectedOrderDetail.customer.phone}</span>
+              </div>
+              {selectedOrderDetail.customer.address && (
+                <div className="text-neutral-600">
+                  <strong>Delivery Address:</strong> {selectedOrderDetail.customer.address}
+                </div>
+              )}
+              {selectedOrderDetail.customer.deliveryNotes && (
+                <div className="text-amber-800 bg-amber-50 p-2 rounded-lg mt-2">
+                  <strong>Special Note:</strong> "{selectedOrderDetail.customer.deliveryNotes}"
+                </div>
+              )}
+            </div>
+
+            {/* Items */}
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1 text-xs">
+              <div className="text-[10px] font-black uppercase tracking-wider text-neutral-400">
+                Ordered Items
+              </div>
+              {selectedOrderDetail.items.map((item, i) => (
+                <div key={i} className="p-3 rounded-xl border border-neutral-100 bg-white space-y-1">
+                  <div className="flex justify-between font-bold text-neutral-900">
+                    <span>
+                      {item.quantity} × {item.name} ({item.size})
+                    </span>
+                    <span>{formatPKR(item.totalPrice)}</span>
+                  </div>
+                  {item.flavour && (
+                    <div className="text-neutral-600">🌶️ Seasoning: {item.flavour.name}</div>
+                  )}
+                  {item.sauce && (
+                    <div className="text-neutral-600">🥣 Sauce: {item.sauce.name}</div>
+                  )}
+                  {item.extras.length > 0 && (
+                    <div className="text-neutral-500">
+                      Extras: {item.extras.map((ex) => `${ex.name} (×${ex.quantity})`).join(', ')}
+                    </div>
+                  )}
+                  {item.specialInstructions && (
+                    <div className="text-amber-700 italic">"{item.specialInstructions}"</div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Totals */}
+            <div className="border-t border-neutral-100 pt-3 flex justify-between items-center text-sm font-black text-neutral-900">
+              <span>Grand Total</span>
+              <span className="text-emerald-900 text-base font-black">
+                {formatPKR(selectedOrderDetail.grandTotal)}
+              </span>
+            </div>
+
+            {/* Status Switcher in Modal */}
+            <div className="pt-2 flex flex-wrap gap-2 justify-end">
+              {(['received', 'preparing', 'ready', 'completed', 'cancelled'] as OrderStatus[]).map(
+                (st) => (
+                  <button
+                    key={st}
+                    onClick={() => handleStatusChange(selectedOrderDetail.id, st)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition-all cursor-pointer ${
+                      selectedOrderDetail.status === st
+                        ? 'bg-emerald-800 text-white font-black'
+                        : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                )
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>

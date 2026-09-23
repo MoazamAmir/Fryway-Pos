@@ -5,11 +5,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, Sparkles } from 'lucide-react';
-import { CartItem, MenuItem, Order, OrderType, AppRole } from './types';
+import { Check, Sparkles, AlertTriangle } from 'lucide-react';
+import { CartItem, MenuItem, Order, OrderType, AppRole, BusinessSettings } from './types';
 import { MENU_PRODUCTS } from './data/menuData';
 import { createOrderRecord, getActiveOrder } from './lib/supabase';
-import { addOrder, getOrders } from './lib/restaurantStore';
+import { addOrder, getOrders, getBusinessSettings } from './lib/restaurantStore';
 import { Header } from './components/layout/Header';
 import { Hero } from './components/hero/Hero';
 import { VideoSection } from './components/media/VideoSection';
@@ -24,13 +24,23 @@ import { CartDrawer } from './components/cart/CartDrawer';
 import { CheckoutModal } from './components/checkout/CheckoutModal';
 import { OrderConfirmationModal } from './components/checkout/OrderConfirmationModal';
 import { MobileFloatingBar } from './components/layout/MobileFloatingBar';
-import { WaiterTabletView } from './components/waiter/WaiterTabletView';
 import { KitchenDisplaySystem } from './components/kitchen/KitchenDisplaySystem';
 import { AdminPortal } from './components/admin/AdminPortal';
 import { RoleAuthModal } from './components/auth/RoleAuthModal';
 import { AccessRestrictedView } from './components/auth/AccessRestrictedView';
 
 export default function App() {
+  // Business settings state (Store OPEN/CLOSED, delivery fee, etc.)
+  const [settings, setSettings] = useState<BusinessSettings>(() => getBusinessSettings());
+
+  useEffect(() => {
+    const handleSettingsUpdate = () => {
+      setSettings(getBusinessSettings());
+    };
+    window.addEventListener('fryway_settings_update', handleSettingsUpdate);
+    return () => window.removeEventListener('fryway_settings_update', handleSettingsUpdate);
+  }, []);
+
   // Determine role based on URL pathname/hash
   const getRouteFromUrl = (): AppRole => {
     try {
@@ -44,7 +54,6 @@ export default function App() {
       )
         return 'kitchen';
       if (path.includes('/admin') || hash.includes('#admin')) return 'admin';
-      if (path.includes('/waiter') || hash.includes('#waiter')) return 'waiter';
     } catch {}
     return 'customer';
   };
@@ -232,10 +241,6 @@ export default function App() {
   const totalCartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
 
   // Role routing & Protected Access
-  if (currentRole === 'waiter') {
-    return <WaiterTabletView onExitMode={() => navigateToRole('customer')} />;
-  }
-
   if (currentRole === 'kitchen') {
     if (!isKitchenAuthed) {
       return (
@@ -323,6 +328,14 @@ export default function App() {
         hasActiveOrder={Boolean(confirmedOrder)}
         onOpenOrderTracker={() => setIsConfirmationOpen(true)}
       />
+
+      {/* Store Closed Banner Notice if closed by admin */}
+      {!settings.isOpen && (
+        <div className="bg-amber-500 text-neutral-950 px-4 py-2.5 shadow-md flex items-center justify-center gap-2 text-xs sm:text-sm font-black sticky top-16 md:top-20 z-30">
+          <AlertTriangle className="w-4 h-4 text-neutral-950 shrink-0 animate-bounce" />
+          <span>Fryway Bahria Town is currently closed for new orders. Regular Hours: {settings.openingHours}</span>
+        </div>
+      )}
 
       <main className="flex-1">
         {/* Hero Banner Section */}

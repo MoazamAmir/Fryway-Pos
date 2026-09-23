@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   ShieldCheck,
   ChefHat,
-  Tablet,
   Users,
   Lock,
   X,
@@ -13,7 +12,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { AppRole } from '../../types';
-import { AUTH_PINS, WAITER_STAFF } from '../../lib/restaurantStore';
+import { AUTH_PINS } from '../../lib/restaurantStore';
 import { audioAlerts } from '../../lib/audioAlerts';
 
 interface RoleAuthModalProps {
@@ -40,12 +39,6 @@ export const RoleAuthModal: React.FC<RoleAuthModalProps> = ({
       desc: 'Public ordering menu and order status tracker',
       icon: Users,
       color: 'emerald',
-    },
-    waiter: {
-      title: 'Waiter Tablet POS',
-      desc: 'Table service ordering for Ali Raza, Hamza Khan & Bilal Ahmed',
-      icon: Tablet,
-      color: 'blue',
     },
     kitchen: {
       title: 'Kitchen Display (KDS)',
@@ -83,26 +76,18 @@ export const RoleAuthModal: React.FC<RoleAuthModalProps> = ({
 
   const verifyPin = (enteredPin: string) => {
     if (targetRole === 'kitchen') {
-      if (enteredPin === AUTH_PINS.kitchen || enteredPin === '1234') {
+      if (enteredPin === AUTH_PINS.kitchen || enteredPin === '1234' || enteredPin === '5555') {
         onSuccessRoleChange('kitchen');
         onClose();
       } else {
         setError('Invalid Kitchen Staff PIN. Hint: 5555');
       }
     } else if (targetRole === 'admin') {
-      if (enteredPin === AUTH_PINS.admin || enteredPin === '1234') {
+      if (enteredPin === AUTH_PINS.admin || enteredPin === '1234' || enteredPin === '7777') {
         onSuccessRoleChange('admin');
         onClose();
       } else {
         setError('Invalid Owner PIN. Hint: 7777');
-      }
-    } else if (targetRole === 'waiter') {
-      const staffMatch = WAITER_STAFF.some((s) => s.pin === enteredPin);
-      if (staffMatch || enteredPin === AUTH_PINS.waiterDemo || enteredPin === '1111') {
-        onSuccessRoleChange('waiter');
-        onClose();
-      } else {
-        setError('Invalid Waiter PIN. Hint: 1111, 2222, or 3333');
       }
     } else {
       onSuccessRoleChange('customer');
@@ -202,22 +187,6 @@ export const RoleAuthModal: React.FC<RoleAuthModalProps> = ({
           <div className="pt-3 border-t border-neutral-800/80 text-[11px] text-neutral-400 flex flex-col gap-1 items-center">
             <span className="font-semibold text-neutral-300">Staff PIN Cheat Sheet:</span>
             <div className="flex flex-wrap gap-1.5 justify-center mt-0.5">
-              {targetRole === 'waiter' && (
-                <>
-                  <button
-                    onClick={() => verifyPin('1111')}
-                    className="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-amber-300 text-[10px] font-mono font-bold"
-                  >
-                    Ali Raza (1111)
-                  </button>
-                  <button
-                    onClick={() => verifyPin('2222')}
-                    className="px-2 py-0.5 rounded bg-neutral-800 hover:bg-neutral-700 text-amber-300 text-[10px] font-mono font-bold"
-                  >
-                    Hamza (2222)
-                  </button>
-                </>
-              )}
               {targetRole === 'kitchen' && (
                 <button
                   onClick={() => verifyPin('5555')}

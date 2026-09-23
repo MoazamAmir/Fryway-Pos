@@ -9,6 +9,7 @@ export interface FlavourItem {
   category: 'spicy' | 'cheesy' | 'tangy' | 'savory' | 'herbal';
   heatLevel: 0 | 1 | 2 | 3;
   popular?: boolean;
+  isAvailable?: boolean;
 }
 
 export interface SauceItem {
@@ -18,6 +19,7 @@ export interface SauceItem {
   profile: 'creamy' | 'tangy' | 'hot' | 'smokey';
   heatLevel: 0 | 1 | 2 | 3;
   popular?: boolean;
+  isAvailable?: boolean;
 }
 
 export interface ExtraItem {
@@ -26,6 +28,7 @@ export interface ExtraItem {
   price: number;
   category: 'dip' | 'sachet';
   description?: string;
+  isAvailable?: boolean;
 }
 
 export interface SizePricing {
@@ -44,7 +47,7 @@ export interface SizePricing {
 export interface MenuItem {
   id: string;
   name: string;
-  category: 'fries' | 'extras' | 'flavours' | 'sauces';
+  category: 'fries' | 'extras';
   size?: FriesSize;
   tagline: string;
   description: string;
@@ -79,7 +82,7 @@ export interface CartItem {
   image: string;
 }
 
-export type OrderType = 'takeaway' | 'delivery' | 'dine_in';
+export type OrderType = 'takeaway' | 'delivery';
 
 export type OrderStatus =
   | 'received'
@@ -98,43 +101,30 @@ export interface OrderCustomer {
   deliveryNotes?: string;
 }
 
+export interface OrderStatusUpdate {
+  status: OrderStatus;
+  time: string;
+  note: string;
+}
+
 export interface Order {
   id: string;
   orderNumber: string;
   createdAt: string;
   placedAtTimestamp: number;
   orderType: OrderType;
-  tableNumber?: string;
-  waiterId?: string;
-  waiterName?: string;
   customer: OrderCustomer;
   items: CartItem[];
   subtotal: number;
   deliveryFee: number;
   grandTotal: number;
-  paymentMethod: 'cash_on_delivery' | 'cash_on_pickup' | 'cash_at_table' | 'card_at_counter';
+  paymentMethod: 'cash_on_delivery' | 'cash_on_pickup' | 'card_at_counter';
   status: OrderStatus;
   estimatedMinutes: number; // e.g. 15-25 mins
-  statusUpdates: {
-    status: OrderStatus;
-    time: string;
-    note: string;
-  }[];
+  statusUpdates: OrderStatusUpdate[];
   kitchenAcceptedAt?: number;
   readyAtTimestamp?: number;
   deliveredAtTimestamp?: number;
-}
-
-export interface WaiterNotification {
-  id: string;
-  orderId: string;
-  orderNumber: string;
-  tableNumber: string;
-  waiterId: string;
-  waiterName: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
 }
 
 export type ExpenseCategory =
@@ -145,7 +135,8 @@ export type ExpenseCategory =
   | 'utilities_gas'
   | 'salaries'
   | 'delivery_fuel'
-  | 'maintenance_misc';
+  | 'maintenance_misc'
+  | 'marketing';
 
 export interface Expense {
   id: string;
@@ -153,19 +144,12 @@ export interface Expense {
   category: ExpenseCategory;
   amount: number;
   date: string; // YYYY-MM-DD
-  time: string;
-  paymentMethod: 'cash' | 'bank_transfer' | 'petty_cash';
+  time?: string;
+  paymentMethod?: 'cash' | 'bank_transfer' | 'petty_cash';
   notes?: string;
 }
 
-export type AppRole = 'customer' | 'waiter' | 'kitchen' | 'admin';
-
-export interface WaiterStaff {
-  id: string;
-  name: string;
-  pin: string;
-  shift: string;
-}
+export type AppRole = 'customer' | 'kitchen' | 'admin';
 
 export interface StaffMember {
   id: string;
@@ -186,8 +170,8 @@ export interface BusinessSettings {
   openingHours: string;
   deliveryFee: number;
   freeDeliveryThreshold: number;
+  minOrderAmount: number;
   currency: string;
   taxPercent: number;
   discountPercent: number;
 }
-

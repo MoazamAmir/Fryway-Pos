@@ -145,10 +145,32 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
           <div>
             © {new Date().getFullYear()} FRYWAY. All rights reserved. Authentic Hand Cut Fries.
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <a
+              href="/kitchen"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.pathname = '/kitchen';
+              }}
+              className="text-emerald-300/80 hover:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>Kitchen KDS</span>
+            </a>
+            <span className="text-emerald-800">•</span>
+            <a
+              href="/admin"
+              onClick={(e) => {
+                e.preventDefault();
+                window.location.pathname = '/admin';
+              }}
+              className="text-emerald-300/80 hover:text-amber-300 transition-colors flex items-center gap-1 cursor-pointer"
+            >
+              <span>Admin Portal</span>
+            </a>
+            <span className="text-emerald-800">•</span>
             <button
               onClick={scrollToTop}
-              className="flex items-center gap-1.5 text-emerald-200 hover:text-white transition-colors"
+              className="flex items-center gap-1.5 text-emerald-200 hover:text-white transition-colors cursor-pointer"
             >
               <span>Back to Top</span>
               <ArrowUp className="w-3.5 h-3.5" />
