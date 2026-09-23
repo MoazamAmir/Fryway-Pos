@@ -35,7 +35,7 @@ export const WhyFryway: React.FC = () => {
   ];
 
   return (
-    <section id="why-fryway" className="py-20 bg-white">
+    <section id="why-fryway" className="py-20 bg-white fryway-section-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-black uppercase tracking-wider mb-3 border border-emerald-200">
@@ -60,7 +60,7 @@ export const WhyFryway: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-7 rounded-3xl bg-neutral-50 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/20 transition-all duration-300 flex flex-col justify-between group shadow-xs hover:shadow-lg"
+                className="p-7 rounded-3xl bg-white/90 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/20 transition-all duration-300 flex flex-col justify-between group shadow-sm hover:shadow-lg pro-card"
               >
                 <div>
                   <div className="flex items-center justify-between mb-5">
@@ -92,3 +92,4 @@ export const WhyFryway: React.FC = () => {
     </section>
   );
 };
+

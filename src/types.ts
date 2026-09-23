@@ -10,6 +10,11 @@ export interface FlavourItem {
   heatLevel: 0 | 1 | 2 | 3;
   popular?: boolean;
   isAvailable?: boolean;
+  nutrition?: NutritionInfo;
+  details?: ProductDetail[];
+  ingredients?: string[];
+  allergenNote?: string;
+  servingNote?: string;
 }
 
 export interface SauceItem {
@@ -20,6 +25,11 @@ export interface SauceItem {
   heatLevel: 0 | 1 | 2 | 3;
   popular?: boolean;
   isAvailable?: boolean;
+  nutrition?: NutritionInfo;
+  details?: ProductDetail[];
+  ingredients?: string[];
+  allergenNote?: string;
+  servingNote?: string;
 }
 
 export interface ExtraItem {
@@ -29,6 +39,11 @@ export interface ExtraItem {
   category: 'dip' | 'sachet';
   description?: string;
   isAvailable?: boolean;
+  nutrition?: NutritionInfo;
+  details?: ProductDetail[];
+  ingredients?: string[];
+  allergenNote?: string;
+  servingNote?: string;
 }
 
 export interface SizePricing {
@@ -44,6 +59,19 @@ export interface SizePricing {
   };
 }
 
+export interface NutritionInfo {
+  calories: number;
+  protein: number;
+  fat: number;
+  carbs: number;
+  sodium: number;
+}
+
+export interface ProductDetail {
+  label: string;
+  value: string;
+}
+
 export interface MenuItem {
   id: string;
   name: string;
@@ -56,6 +84,11 @@ export interface MenuItem {
   badge?: string;
   popular?: boolean;
   isAvailable?: boolean;
+  nutrition?: NutritionInfo;
+  details?: ProductDetail[];
+  ingredients?: string[];
+  allergenNote?: string;
+  servingNote?: string;
 }
 
 export interface SelectedExtra {
@@ -80,6 +113,11 @@ export interface CartItem {
   quantity: number;
   totalPrice: number;
   image: string;
+  nutrition?: NutritionInfo;
+  details?: ProductDetail[];
+  ingredients?: string[];
+  allergenNote?: string;
+  servingNote?: string;
 }
 
 export type OrderType = 'takeaway' | 'delivery';
@@ -175,3 +213,4 @@ export interface BusinessSettings {
   taxPercent: number;
   discountPercent: number;
 }
+

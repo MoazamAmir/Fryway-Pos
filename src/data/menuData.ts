@@ -113,6 +113,15 @@ export const MENU_PRODUCTS: MenuItem[] = [
     image: FRYWAY_IMAGES.plainFries,
     badge: 'Classic Single',
     popular: true,
+  nutrition: { calories: 430, protein: 6, fat: 19, carbs: 58, sodium: 520 },
+    details: [
+      { label: 'Cut', value: 'Daily hand-cut skin-on potatoes' },
+      { label: 'Cook', value: 'Double-cooked for crisp edges' },
+      { label: 'Best with', value: 'Garlic Mayo or Chat Masala' },
+    ],
+    ingredients: ['Fresh potatoes', 'Sunflower cooking oil', 'Sea salt'],
+    allergenNote: 'Prepared in a kitchen that handles dairy, egg, mustard, and spices.',
+    servingNote: 'Approx values before selected masala, sauces, and extras.',
   },
   {
     id: 'fries_medium',
@@ -125,6 +134,15 @@ export const MENU_PRODUCTS: MenuItem[] = [
     image: FRYWAY_IMAGES.loadedFries,
     badge: 'Most Popular',
     popular: true,
+  nutrition: { calories: 690, protein: 9, fat: 31, carbs: 92, sodium: 760 },
+    details: [
+      { label: 'Portion', value: 'Signature 350g loaded portion' },
+      { label: 'Texture', value: 'Crispy outside, fluffy center' },
+      { label: 'Best with', value: 'Tikka Masala and Cheese Mayo' },
+    ],
+    ingredients: ['Fresh potatoes', 'Sunflower cooking oil', 'Sea salt'],
+    allergenNote: 'Sauce selections may contain egg, dairy, mustard, or soy.',
+    servingNote: 'Nutrition updates in cart based on selected loading style and extras.',
   },
   {
     id: 'fries_large',
@@ -137,6 +155,15 @@ export const MENU_PRODUCTS: MenuItem[] = [
     image: FRYWAY_IMAGES.hero,
     badge: 'Best Value',
     popular: true,
+  nutrition: { calories: 980, protein: 13, fat: 45, carbs: 132, sodium: 1080 },
+    details: [
+      { label: 'Share size', value: 'Built for 2-3 fry lovers' },
+      { label: 'Finish', value: 'Extra-crisp batch with generous topping room' },
+      { label: 'Best with', value: 'Jalapeno Masala and Ranch drizzle' },
+    ],
+    ingredients: ['Fresh potatoes', 'Sunflower cooking oil', 'Sea salt'],
+    allergenNote: 'Loaded styles may include dairy, egg, mustard, and chilli spice blends.',
+    servingNote: 'Approx values before selected masala, sauces, and extras.',
   },
   {
     id: 'extra_gourmet_dips',
@@ -147,6 +174,15 @@ export const MENU_PRODUCTS: MenuItem[] = [
     basePrice: 80,
     image: FRYWAY_IMAGES.saucesDips,
     badge: 'Handcrafted',
+  nutrition: { calories: 145, protein: 1, fat: 13, carbs: 5, sodium: 290 },
+    details: [
+      { label: 'Range', value: '13 signature dips and sauce cups' },
+      { label: 'Prep', value: 'Small-batch creamy and spicy blends' },
+      { label: 'Use', value: 'Dip, drizzle, or keep on the side' },
+    ],
+    ingredients: ['House mayo base', 'Cheese blend', 'Garlic', 'Chilli', 'Herbs'],
+    allergenNote: 'Most creamy dips contain egg and dairy; ask staff for sauce guidance.',
+    servingNote: 'Approx values per gourmet sauce cup.',
   },
 ];
 
@@ -164,3 +200,5 @@ export const RESTAURANT_INFO = {
   minOrderAmount: 200,
   hours: 'Daily: 1:00 PM – 2:00 AM',
 };
+
+

@@ -13,8 +13,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
   };
 
   return (
-    <footer className="bg-emerald-950 text-white border-t border-emerald-900 pt-16 pb-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <footer className="bg-emerald-950 text-white border-t border-emerald-900 pt-16 pb-12 relative overflow-hidden"><div className="absolute inset-0 opacity-[0.08] fryway-section-surface pointer-events-none" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 pb-12 border-b border-emerald-900/80">
           {/* Brand Col */}
           <div className="lg:col-span-4 space-y-4">
@@ -42,7 +42,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('hero')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   Home
                 </button>
@@ -50,7 +50,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('menu')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   Fries Menu & Pricing
                 </button>
@@ -58,7 +58,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('flavours-sauces')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   17 Flavours & 13 Sauces
                 </button>
@@ -66,7 +66,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('why-fryway')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   The Hand-Cut Craft
                 </button>
@@ -74,7 +74,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('about')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   About Fryway
                 </button>
@@ -82,7 +82,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
               <li>
                 <button
                   onClick={() => onNavigateToSection('contact')}
-                  className="text-emerald-200/90 hover:text-white transition-colors"
+                  className="text-emerald-200/90 hover:text-white transition-colors hover:translate-x-1 inline-block"
                 >
                   Contact & Locations
                 </button>
@@ -181,3 +181,4 @@ export const Footer: React.FC<FooterProps> = ({ onNavigateToSection }) => {
     </footer>
   );
 };
+

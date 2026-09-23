@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Bike, Store, Sparkles } from 'lucide-react';
+import { X, Trash2, Plus, Minus, ShoppingBag, ArrowRight, Bike, Store, Sparkles, Info, Beef, Flame } from 'lucide-react';
 import { CartItem, OrderType } from '../../types';
 import { calculateCartSubtotal, calculateDeliveryFee, calculateGrandTotal, formatPKR } from '../../lib/pricing';
 import { RESTAURANT_INFO } from '../../data/menuData';
@@ -53,7 +53,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ type: 'spring', damping: 26, stiffness: 280 }}
-            className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 overflow-hidden"
+            className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col z-10 overflow-hidden border-l border-emerald-100"
           >
             {/* Header */}
             <div className="p-5 border-b border-neutral-200 bg-white flex items-center justify-between shrink-0">
@@ -158,25 +158,61 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   </button>
                 </div>
               ) : (
-                items.map((item) => (
-                  <div key={item.id} className="pt-3 first:pt-0 space-y-2">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <h4 className="text-sm font-black uppercase text-neutral-900 leading-tight">
-                          {item.name}
-                        </h4>
-                        <div className="text-xs font-semibold text-emerald-800 capitalize mt-0.5">
-                          {item.style.replace('_', ' & ')}
-                        </div>
+                items.map((item) => {
+                  const totalNutrition = item.nutrition
+                    ? {
+                        calories: item.nutrition.calories * item.quantity,
+                        protein: item.nutrition.protein * item.quantity,
+                        fat: item.nutrition.fat * item.quantity,
+                        carbs: item.nutrition.carbs * item.quantity,
+                        sodium: item.nutrition.sodium * item.quantity,
+                      }
+                    : null;
+
+                  return (
+                  <div key={item.id} className="pt-4 first:pt-0 space-y-3">
+                    <div className="flex items-start gap-3">
+                      <div className="w-20 h-20 rounded-2xl bg-neutral-100 overflow-hidden border border-neutral-200 shrink-0 hot-food-media cart-steam">
+                        {item.image ? (
+                          <><img src={item.image} alt={item.name} className="w-full h-full object-cover" /><div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div><span className="image-sheen" /></>
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-emerald-800">
+                            <ShoppingBag className="w-6 h-6" />
+                          </div>
+                        )}
                       </div>
 
-                      <button
-                        onClick={() => onRemoveItem(item.id)}
-                        className="text-neutral-400 hover:text-red-500 p-1 transition-colors"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-start justify-between gap-2">
+                          <div>
+                            <h4 className="text-sm font-black uppercase text-neutral-900 leading-tight break-words">
+                              {item.name}
+                            </h4>
+                            <div className="text-xs font-semibold text-emerald-800 capitalize mt-0.5">
+                              {item.style.replace('_', ' & ')} - {item.sizeLabel}
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => onRemoveItem(item.id)}
+                            className="text-neutral-400 hover:text-red-500 p-1 transition-colors shrink-0"
+                            aria-label="Remove item"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {item.details && item.details.length > 0 && (
+                          <div className="mt-2 grid grid-cols-1 gap-1">
+                            {item.details.slice(0, 2).map((detail) => (
+                              <div key={detail.label} className="flex items-start gap-1.5 text-[11px] text-neutral-600">
+                                <Info className="w-3 h-3 text-emerald-700 mt-0.5 shrink-0" />
+                                <span><strong className="text-neutral-800">{detail.label}:</strong> {detail.value}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Modifiers Pill tags */}
@@ -201,6 +237,44 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       ))}
                     </div>
 
+
+                    {totalNutrition && (
+                      <div className="grid grid-cols-5 gap-1.5 rounded-2xl bg-neutral-50 border border-neutral-200 p-2">
+                        <div className="text-center">
+                          <Flame className="w-3.5 h-3.5 mx-auto text-amber-500" />
+                          <div className="text-[10px] font-black text-neutral-900">{totalNutrition.calories}</div>
+                          <div className="text-[9px] uppercase text-neutral-400 font-bold">kcal</div>
+                        </div>
+                        <div className="text-center">
+                          <Beef className="w-3.5 h-3.5 mx-auto text-emerald-700" />
+                          <div className="text-[10px] font-black text-neutral-900">{totalNutrition.protein}g</div>
+                          <div className="text-[9px] uppercase text-neutral-400 font-bold">protein</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-black text-neutral-900 mt-0.5">{totalNutrition.fat}g</div>
+                          <div className="text-[9px] uppercase text-neutral-400 font-bold">fat</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-black text-neutral-900 mt-0.5">{totalNutrition.carbs}g</div>
+                          <div className="text-[9px] uppercase text-neutral-400 font-bold">carbs</div>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-[10px] font-black text-neutral-900 mt-0.5">{totalNutrition.sodium}</div>
+                          <div className="text-[9px] uppercase text-neutral-400 font-bold">sodium</div>
+                        </div>
+                      </div>
+                    )}
+
+                    {(item.ingredients?.length || item.allergenNote) && (
+                      <div className="rounded-xl bg-white border border-neutral-200 p-2.5 text-[11px] text-neutral-600 space-y-1">
+                        {item.ingredients?.length ? (
+                          <div><strong className="text-neutral-800">Ingredients:</strong> {item.ingredients.join(', ')}</div>
+                        ) : null}
+                        {item.allergenNote && (
+                          <div><strong className="text-neutral-800">Allergen note:</strong> {item.allergenNote}</div>
+                        )}
+                      </div>
+                    )}
                     {item.specialInstructions && (
                       <div className="text-[11px] text-neutral-500 italic bg-neutral-50 p-2 rounded-lg">
                         "{item.specialInstructions}"
@@ -237,7 +311,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       </div>
                     </div>
                   </div>
-                ))
+                  );
+                })
               )}
             </div>
 
@@ -277,3 +352,10 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     </AnimatePresence>
   );
 };
+
+
+
+
+
+
+

@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Check, Plus, Minus, Sparkles, Flame, Droplets, UtensilsCrossed, ShieldAlert } from 'lucide-react';
+import { X, Check, Plus, Minus, Sparkles, Flame, Droplets, UtensilsCrossed, ShieldAlert, ChevronDown } from 'lucide-react';
 import {
   CartItem,
   FlavourItem,
   FriesSize,
   FriesStyle,
   MenuItem,
+  NutritionInfo,
   SauceItem,
   SelectedExtra,
 } from '../../types';
@@ -27,6 +28,32 @@ interface CustomizationModalProps {
   product: MenuItem | null;
   onAddToCart: (item: CartItem) => void;
 }
+const BASE_NUTRITION_BY_SIZE: Record<FriesSize, NutritionInfo> = {
+  regular: { calories: 430, protein: 6, fat: 19, carbs: 58, sodium: 520 },
+  medium: { calories: 690, protein: 9, fat: 31, carbs: 92, sodium: 760 },
+  large: { calories: 980, protein: 13, fat: 45, carbs: 132, sodium: 1080 },
+};
+
+const STYLE_NUTRITION_ADDERS: Record<FriesStyle, NutritionInfo> = {
+  plain: { calories: 0, protein: 0, fat: 0, carbs: 0, sodium: 0 },
+  masala: { calories: 35, protein: 1, fat: 1, carbs: 6, sodium: 320 },
+  sauce: { calories: 120, protein: 1, fat: 11, carbs: 4, sodium: 210 },
+  masala_sauce: { calories: 155, protein: 2, fat: 12, carbs: 10, sodium: 530 },
+};
+
+const EXTRA_NUTRITION: Record<string, NutritionInfo> = {
+  extra_dip: { calories: 145, protein: 1, fat: 13, carbs: 5, sodium: 290 },
+  ketchup_chilli_dip: { calories: 45, protein: 0, fat: 0, carbs: 11, sodium: 180 },
+  ketchup_sachet: { calories: 15, protein: 0, fat: 0, carbs: 4, sodium: 75 },
+};
+
+const addNutrition = (base: NutritionInfo, add: NutritionInfo, multiplier = 1): NutritionInfo => ({
+  calories: base.calories + add.calories * multiplier,
+  protein: base.protein + add.protein * multiplier,
+  fat: base.fat + add.fat * multiplier,
+  carbs: base.carbs + add.carbs * multiplier,
+  sodium: base.sodium + add.sodium * multiplier,
+});
 
 export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   isOpen,
@@ -90,6 +117,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
   // Validation state
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Dropdown selection panels
+  const [isFlavourDropdownOpen, setIsFlavourDropdownOpen] = useState<boolean>(false);
+  const [isSauceDropdownOpen, setIsSauceDropdownOpen] = useState<boolean>(false);
+
   // Reset/sync when product changes
   useEffect(() => {
     if (product?.size) {
@@ -140,6 +171,17 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
     return unitPrice * quantity;
   }, [unitPrice, quantity]);
 
+  const unitNutrition = useMemo(() => {
+    let nutrition = addNutrition(BASE_NUTRITION_BY_SIZE[selectedSize], STYLE_NUTRITION_ADDERS[selectedStyle]);
+    selectedExtras.forEach((extra) => {
+      const extraNutrition = EXTRA_NUTRITION[extra.extraId];
+      if (extraNutrition) {
+        nutrition = addNutrition(nutrition, extraNutrition, extra.quantity);
+      }
+    });
+    return nutrition;
+  }, [selectedSize, selectedStyle, selectedExtras]);
+
   // Handle Add to Cart
   const handleConfirm = () => {
     if ((selectedStyle === 'masala' || selectedStyle === 'masala_sauce') && !selectedFlavour) {
@@ -170,6 +212,11 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
       quantity,
       totalPrice,
       image: product?.image || '',
+      nutrition: unitNutrition,
+      details: product?.details,
+      ingredients: product?.ingredients,
+      allergenNote: product?.allergenNote,
+      servingNote: 'Nutrition is estimated per configured item before multiplying cart quantity.',
     };
 
     onAddToCart(newItem);
@@ -197,10 +244,10 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden z-10 my-6 flex flex-col max-h-[92vh]"
+          className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden z-10 my-6 flex flex-col max-h-[92vh] border border-white/80"
         >
           {/* Top Banner / Image Header */}
-          <div className="relative h-44 sm:h-52 bg-emerald-950 shrink-0 overflow-hidden">
+          <div className="relative h-44 sm:h-52 bg-emerald-950 shrink-0 overflow-hidden hot-food-media">
             {product?.image && (
               <img
                 src={product.image}
@@ -209,6 +256,8 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 className="w-full h-full object-cover opacity-50"
               />
             )}
+            <div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div>
+            <span className="image-sheen" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
             {/* Close Button */}
@@ -336,7 +385,11 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                       key={styleOpt.id}
                       id={`style-option-${styleOpt.id}`}
                       type="button"
-                      onClick={() => setSelectedStyle(styleOpt.id)}
+                      onClick={() => {
+                        setSelectedStyle(styleOpt.id);
+                        setIsFlavourDropdownOpen(false);
+                        setIsSauceDropdownOpen(false);
+                      }}
                       className={`relative p-3.5 rounded-2xl border-2 text-left transition-all flex flex-col justify-between cursor-pointer ${
                         isSelected
                           ? 'border-emerald-700 bg-emerald-50 shadow-sm'
@@ -387,53 +440,82 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="space-y-3"
+                className="rounded-2xl border border-emerald-100 bg-white shadow-sm overflow-hidden"
               >
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-black uppercase text-neutral-900 tracking-wider flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-800 text-white text-xs flex items-center justify-center font-bold">
+                <button
+                  type="button"
+                  onClick={() => setIsFlavourDropdownOpen((open) => !open)}
+                  className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-left hover:bg-emerald-50/50 transition-all"
+                  aria-expanded={isFlavourDropdownOpen}
+                >
+                  <div className="min-w-0 flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-white text-xs flex items-center justify-center font-black shrink-0">
                       3
                     </span>
-                    Choose Seasoning Flavour ({flavoursList.length} Options)
-                  </label>
-                  <span className="text-xs font-bold text-emerald-800">
-                    Selected: {selectedFlavour?.name}
-                  </span>
-                </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-black uppercase text-neutral-900 tracking-wider leading-tight">
+                        Choose Seasoning Flavour
+                      </div>
+                      <div className="text-[11px] text-neutral-500 font-semibold">
+                        {flavoursList.length} options available
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="inline-flex max-w-[120px] sm:max-w-[170px] truncate px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-100 text-[11px] font-black">
+                      {selectedFlavour?.name || 'Select'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-emerald-800 transition-transform ${isFlavourDropdownOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1.5 border border-neutral-200 rounded-2xl">
-                  {flavoursList.map((flav) => {
-                    const isSelected = selectedFlavour?.id === flav.id;
-                    const isAvailable = flav.isAvailable !== false;
-                    return (
-                      <button
-                        key={flav.id}
-                        id={`flavour-option-${flav.id}`}
-                        type="button"
-                        disabled={!isAvailable}
-                        onClick={() => isAvailable && setSelectedFlavour(flav)}
-                        className={`p-2.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between gap-1.5 min-h-[44px] ${
-                          !isAvailable
-                            ? 'border-neutral-200 bg-neutral-100 text-neutral-400 opacity-60 cursor-not-allowed'
-                            : isSelected
-                            ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold shadow-xs cursor-pointer'
-                            : 'border-neutral-200 hover:border-emerald-300 bg-white text-neutral-800 font-medium cursor-pointer'
-                        }`}
-                      >
-                        <span className="leading-tight break-words">{flav.name}</span>
-                        {!isAvailable ? (
-                          <span className="text-[9px] uppercase font-bold text-rose-600">Sold Out</span>
-                        ) : isSelected ? (
-                          <Check className="w-3.5 h-3.5 shrink-0 text-emerald-700 stroke-[3]" />
-                        ) : (
-                          flav.heatLevel > 1 && (
-                            <Flame className="w-3 h-3 text-amber-500 shrink-0" />
-                          )
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+                <AnimatePresence initial={false}>
+                  {isFlavourDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="border-t border-emerald-100 bg-neutral-50/60"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-3">
+                        {flavoursList.map((flav) => {
+                          const isSelected = selectedFlavour?.id === flav.id;
+                          const isAvailable = flav.isAvailable !== false;
+                          return (
+                            <button
+                              key={flav.id}
+                              id={`flavour-option-${flav.id}`}
+                              type="button"
+                              disabled={!isAvailable}
+                              onClick={() => {
+                                if (!isAvailable) return;
+                                setSelectedFlavour(flav);
+                                setIsFlavourDropdownOpen(false);
+                              }}
+                              className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between gap-2 min-h-[46px] ${
+                                !isAvailable
+                                  ? 'border-neutral-200 bg-neutral-100 text-neutral-400 opacity-60 cursor-not-allowed'
+                                  : isSelected
+                                  ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold shadow-xs cursor-pointer'
+                                  : 'border-neutral-200 hover:border-emerald-300 bg-white text-neutral-800 font-medium cursor-pointer hover:-translate-y-0.5'
+                              }`}
+                            >
+                              <span className="leading-tight break-words">{flav.name}</span>
+                              {!isAvailable ? (
+                                <span className="text-[9px] uppercase font-bold text-rose-600">Sold Out</span>
+                              ) : isSelected ? (
+                                <Check className="w-3.5 h-3.5 shrink-0 text-emerald-700 stroke-[3]" />
+                              ) : (
+                                flav.heatLevel > 1 && <Flame className="w-3 h-3 text-amber-500 shrink-0" />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
 
@@ -442,52 +524,82 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
-                className="space-y-3"
+                className="rounded-2xl border border-emerald-100 bg-white shadow-sm overflow-hidden"
               >
-                <div className="flex items-center justify-between">
-                  <label className="text-sm font-black uppercase text-neutral-900 tracking-wider flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-emerald-800 text-white text-xs flex items-center justify-center font-bold">
+                <button
+                  type="button"
+                  onClick={() => setIsSauceDropdownOpen((open) => !open)}
+                  className="w-full flex items-center justify-between gap-3 p-3.5 sm:p-4 text-left hover:bg-emerald-50/50 transition-all"
+                  aria-expanded={isSauceDropdownOpen}
+                >
+                  <div className="min-w-0 flex items-center gap-2.5">
+                    <span className="w-6 h-6 rounded-full bg-emerald-800 text-white text-xs flex items-center justify-center font-black shrink-0">
                       {selectedStyle === 'masala_sauce' ? '4' : '3'}
                     </span>
-                    Choose Gourmet Sauce ({saucesList.length} Options)
-                  </label>
-                  <span className="text-xs font-bold text-emerald-800">
-                    Selected: {selectedSauce?.name}
-                  </span>
-                </div>
+                    <div className="min-w-0">
+                      <div className="text-sm font-black uppercase text-neutral-900 tracking-wider leading-tight">
+                        Choose Gourmet Sauce
+                      </div>
+                      <div className="text-[11px] text-neutral-500 font-semibold">
+                        {saucesList.length} options available
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="inline-flex max-w-[120px] sm:max-w-[170px] truncate px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-100 text-[11px] font-black">
+                      {selectedSauce?.name || 'Select'}
+                    </span>
+                    <ChevronDown className={`w-4 h-4 text-emerald-800 transition-transform ${isSauceDropdownOpen ? 'rotate-180' : ''}`} />
+                  </div>
+                </button>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-56 overflow-y-auto p-1.5 border border-neutral-200 rounded-2xl">
-                  {saucesList.map((sc) => {
-                    const isSelected = selectedSauce?.id === sc.id;
-                    const isAvailable = sc.isAvailable !== false;
-                    return (
-                      <button
-                        key={sc.id}
-                        id={`sauce-option-${sc.id}`}
-                        type="button"
-                        disabled={!isAvailable}
-                        onClick={() => isAvailable && setSelectedSauce(sc)}
-                        className={`p-2.5 rounded-xl border text-left text-xs transition-all flex items-center justify-between gap-1.5 min-h-[44px] ${
-                          !isAvailable
-                            ? 'border-neutral-200 bg-neutral-100 text-neutral-400 opacity-60 cursor-not-allowed'
-                            : isSelected
-                            ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold shadow-xs cursor-pointer'
-                            : 'border-neutral-200 hover:border-emerald-300 bg-white text-neutral-800 font-medium cursor-pointer'
-                        }`}
-                      >
-                        <span className="leading-tight break-words">{sc.name}</span>
-                        {!isAvailable ? (
-                          <span className="text-[9px] uppercase font-bold text-rose-600">Sold Out</span>
-                        ) : isSelected ? (
-                          <Check className="w-3.5 h-3.5 shrink-0 text-emerald-700 stroke-[3]" />
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
+                <AnimatePresence initial={false}>
+                  {isSauceDropdownOpen && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="border-t border-emerald-100 bg-neutral-50/60"
+                    >
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-64 overflow-y-auto p-3">
+                        {saucesList.map((sc) => {
+                          const isSelected = selectedSauce?.id === sc.id;
+                          const isAvailable = sc.isAvailable !== false;
+                          return (
+                            <button
+                              key={sc.id}
+                              id={`sauce-option-${sc.id}`}
+                              type="button"
+                              disabled={!isAvailable}
+                              onClick={() => {
+                                if (!isAvailable) return;
+                                setSelectedSauce(sc);
+                                setIsSauceDropdownOpen(false);
+                              }}
+                              className={`p-3 rounded-xl border text-left text-xs transition-all flex items-center justify-between gap-2 min-h-[46px] ${
+                                !isAvailable
+                                  ? 'border-neutral-200 bg-neutral-100 text-neutral-400 opacity-60 cursor-not-allowed'
+                                  : isSelected
+                                  ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold shadow-xs cursor-pointer'
+                                  : 'border-neutral-200 hover:border-emerald-300 bg-white text-neutral-800 font-medium cursor-pointer hover:-translate-y-0.5'
+                              }`}
+                            >
+                              <span className="leading-tight break-words">{sc.name}</span>
+                              {!isAvailable ? (
+                                <span className="text-[9px] uppercase font-bold text-rose-600">Sold Out</span>
+                              ) : isSelected ? (
+                                <Check className="w-3.5 h-3.5 shrink-0 text-emerald-700 stroke-[3]" />
+                              ) : null}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             )}
-
             {/* 5. EXTRAS & DIPS */}
             <div className="space-y-3">
               <label className="text-sm font-black uppercase text-neutral-900 tracking-wider flex items-center gap-2">
@@ -622,6 +734,37 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
                 className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
               />
             </div>
+            {/* Nutrition and Product Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+              {[
+                ['Calories', `${unitNutrition.calories} kcal`],
+                ['Protein', `${unitNutrition.protein}g`],
+                ['Fat', `${unitNutrition.fat}g`],
+                ['Carbs', `${unitNutrition.carbs}g`],
+                ['Sodium', `${unitNutrition.sodium}mg`],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-2xl border border-neutral-200 bg-white p-3 text-center shadow-xs">
+                  <div className="text-[10px] font-black uppercase tracking-wider text-neutral-400">{label}</div>
+                  <div className="mt-0.5 text-sm font-black text-neutral-950">{value}</div>
+                </div>
+              ))}
+            </div>
+
+            {product?.details && product.details.length > 0 && (
+              <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
+                <div className="text-[10px] font-black uppercase tracking-wider text-emerald-900 mb-2">
+                  Product Details
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  {product.details.map((detail) => (
+                    <div key={detail.label} className="rounded-xl bg-white/80 border border-white px-3 py-2">
+                      <div className="text-[10px] font-bold uppercase text-neutral-400">{detail.label}</div>
+                      <div className="text-xs font-bold text-neutral-900 leading-snug">{detail.value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Final Configuration Visual Card */}
             <div className="p-3.5 rounded-2xl bg-emerald-50/80 border border-emerald-200 text-xs space-y-1">
@@ -698,3 +841,14 @@ export const CustomizationModal: React.FC<CustomizationModalProps> = ({
     </AnimatePresence>
   );
 };
+
+
+
+
+
+
+
+
+
+
+

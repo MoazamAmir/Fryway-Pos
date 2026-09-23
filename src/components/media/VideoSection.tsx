@@ -50,10 +50,10 @@ export const VideoSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="relative max-w-5xl mx-auto rounded-3xl overflow-hidden border-2 border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/80 group"
+          className="relative max-w-5xl mx-auto rounded-3xl overflow-hidden border-2 border-neutral-800 bg-neutral-950 shadow-2xl shadow-black/80 group pro-card"
         >
           {/* Video element with fallback poster */}
-          <div className="relative aspect-video w-full overflow-hidden bg-neutral-950">
+          <div className="relative aspect-video w-full overflow-hidden bg-neutral-950 hot-food-media">
             <video
               ref={videoRef}
               src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
@@ -64,6 +64,9 @@ export const VideoSection: React.FC = () => {
               playsInline
               className="w-full h-full object-cover"
             />
+
+            <div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div>
+            <span className="image-sheen" />
 
             {/* Subtle cinematic gradient vignette */}
             <div className="absolute inset-0 bg-gradient-to-t from-neutral-950/80 via-transparent to-neutral-950/30 pointer-events-none" />
@@ -118,3 +121,5 @@ export const VideoSection: React.FC = () => {
     </section>
   );
 };
+
+

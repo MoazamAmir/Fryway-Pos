@@ -41,3 +41,239 @@
     margin: 0;
   }
 }
+
+/* ----------------------------------------------------
+   Fryway Premium UI Motion Layer
+   ---------------------------------------------------- */
+:root {
+  --fryway-emerald: #065f46;
+  --fryway-emerald-deep: #022c22;
+  --fryway-amber: #fbbf24;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background:
+    linear-gradient(180deg, rgba(236, 253, 245, 0.34), rgba(250, 250, 250, 0.98) 34rem),
+    #fafafa;
+}
+
+.fryway-section-surface {
+  background-image:
+    linear-gradient(rgba(6, 95, 70, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 95, 70, 0.035) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.pro-card {
+  position: relative;
+  transform: translateZ(0);
+  transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease, background-color 260ms ease;
+}
+
+.pro-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.62), transparent 38%, rgba(251, 191, 36, 0.1));
+  opacity: 0;
+  transition: opacity 260ms ease;
+}
+
+.pro-card:hover {
+  transform: translateY(-5px);
+}
+
+.pro-card:hover::before {
+  opacity: 1;
+}
+
+.hot-food-media {
+  position: relative;
+  isolation: isolate;
+}
+
+.hot-food-media::before,
+.hot-food-media::after {
+  content: '';
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  bottom: 14%;
+  height: 46%;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 18% 84%, rgba(255, 255, 255, 0.34), transparent 46%),
+    radial-gradient(ellipse at 52% 76%, rgba(255, 255, 255, 0.28), transparent 48%),
+    radial-gradient(ellipse at 82% 88%, rgba(255, 255, 255, 0.24), transparent 42%);
+  filter: blur(13px);
+  opacity: 0.72;
+  transform: translateY(18px) scale(0.9);
+  animation: fryway-smoke-rise 5.8s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.hot-food-media::after {
+  left: 16%;
+  right: 18%;
+  bottom: 22%;
+  height: 38%;
+  opacity: 0.44;
+  filter: blur(18px);
+  animation-duration: 7.6s;
+  animation-delay: -2.1s;
+}
+
+.image-sheen {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  background: linear-gradient(110deg, transparent 28%, rgba(255, 255, 255, 0.18) 44%, transparent 58%);
+  transform: translateX(-130%);
+  animation: fryway-sheen 6s ease-in-out infinite;
+}
+
+.float-soft {
+  animation: fryway-float 4.8s ease-in-out infinite;
+}
+
+@keyframes fryway-smoke-rise {
+  0% {
+    opacity: 0;
+    transform: translate3d(-8px, 24px, 0) scale(0.82);
+  }
+  22% {
+    opacity: 0.72;
+  }
+  55% {
+    opacity: 0.48;
+    transform: translate3d(8px, -24px, 0) scale(1.08);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(-4px, -64px, 0) scale(1.28);
+  }
+}
+
+@keyframes fryway-sheen {
+  0%, 42% {
+    transform: translateX(-130%);
+  }
+  58%, 100% {
+    transform: translateX(130%);
+  }
+}
+
+@keyframes fryway-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+.steam-wisps {
+  position: absolute;
+  left: 50%;
+  bottom: 20%;
+  width: 58%;
+  max-width: 260px;
+  height: 54%;
+  transform: translateX(-50%);
+  pointer-events: none;
+  z-index: 4;
+  overflow: visible;
+}
+
+.steam-wisps span {
+  position: absolute;
+  bottom: 0;
+  width: 20px;
+  height: 86px;
+  border-radius: 999px;
+  opacity: 0;
+  filter: blur(8px);
+  background:
+    radial-gradient(ellipse at 50% 88%, rgba(255, 255, 255, 0.58), transparent 54%),
+    linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.5) 42%, transparent 86%);
+  transform-origin: 50% 100%;
+  animation: fryway-steam-wisp 4.7s ease-in-out infinite;
+  mix-blend-mode: screen;
+}
+
+.steam-wisps span:nth-child(1) {
+  left: 22%;
+  animation-delay: -0.4s;
+}
+
+.steam-wisps span:nth-child(2) {
+  left: 45%;
+  height: 104px;
+  animation-delay: -1.7s;
+  animation-duration: 5.4s;
+}
+
+.steam-wisps span:nth-child(3) {
+  left: 65%;
+  height: 92px;
+  animation-delay: -2.6s;
+  animation-duration: 4.9s;
+}
+
+.steam-wisps span:nth-child(4) {
+  left: 36%;
+  height: 74px;
+  animation-delay: -3.2s;
+  animation-duration: 5.9s;
+}
+
+@keyframes fryway-steam-wisp {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0) rotate(0deg) scaleX(0.55) scaleY(0.55);
+  }
+  18% {
+    opacity: 0.66;
+  }
+  48% {
+    opacity: 0.42;
+    transform: translate3d(12px, -34px, 0) rotate(8deg) scaleX(1) scaleY(1.12);
+  }
+  74% {
+    opacity: 0.2;
+    transform: translate3d(-10px, -78px, 0) rotate(-7deg) scaleX(1.2) scaleY(1.35);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(8px, -118px, 0) rotate(10deg) scaleX(1.45) scaleY(1.6);
+  }
+}
+
+.cart-steam .steam-wisps {
+  bottom: 18%;
+  width: 78%;
+  height: 66%;
+}
+
+.cart-steam .steam-wisps span {
+  width: 12px;
+  height: 52px;
+  filter: blur(6px);
+}

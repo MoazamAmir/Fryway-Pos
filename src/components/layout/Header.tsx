@@ -68,7 +68,7 @@ export const Header: React.FC<HeaderProps> = ({
       <header
         className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           isScrolled
-            ? 'bg-white/95 backdrop-blur-md shadow-sm shadow-emerald-950/5 border-b border-emerald-100 py-2 sm:py-2.5'
+            ? 'bg-white/95 backdrop-blur-xl shadow-lg shadow-emerald-950/5 border-b border-emerald-100 py-2 sm:py-2.5'
             : 'bg-white/90 backdrop-blur-sm border-b border-emerald-100/60 py-3 sm:py-3.5'
         }`}
       >
@@ -92,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
                 key={link.target}
                 id={`nav-link-${link.target}`}
                 onClick={() => handleNavClick(link.target)}
-                className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs font-bold text-neutral-600 hover:text-emerald-950 hover:bg-emerald-50/90 transition-all uppercase tracking-wider cursor-pointer whitespace-nowrap"
+                className="px-3 xl:px-3.5 py-1.5 rounded-full text-xs font-bold text-neutral-600 hover:text-emerald-950 hover:bg-emerald-50/90 transition-all uppercase tracking-wider cursor-pointer whitespace-nowrap hover:-translate-y-0.5"
               >
                 {link.label}
               </button>
@@ -153,7 +153,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="header-cart-btn"
               onClick={onOpenCart}
-              className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-900 transition-all border border-emerald-200/80 active:scale-95 focus:outline-none cursor-pointer group shadow-2xs shrink-0"
+              className="relative flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-900 transition-all border border-emerald-200/80 active:scale-95 focus:outline-none cursor-pointer group shadow-sm shrink-0 hover:-translate-y-0.5"
               aria-label={`View Cart, ${cartCount} items`}
             >
               <ShoppingBag className="w-5 h-5 text-emerald-800 group-hover:scale-105 transition-transform" />
@@ -175,7 +175,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               id="header-order-now-btn"
               onClick={() => handleNavClick('menu')}
-              className="hidden lg:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs sm:text-sm font-black shadow-md shadow-emerald-950/15 hover:shadow-emerald-950/25 transition-all active:scale-95 focus:outline-none cursor-pointer tracking-wide shrink-0"
+              className="hidden lg:inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-gradient-to-r from-emerald-800 to-emerald-900 hover:from-emerald-700 hover:to-emerald-800 text-white text-xs sm:text-sm font-black shadow-md shadow-emerald-950/15 hover:shadow-emerald-950/25 transition-all active:scale-95 focus:outline-none cursor-pointer tracking-wide shrink-0 hover:-translate-y-0.5"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
               <span>Order Now</span>
@@ -213,7 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-x-0 top-[65px] z-35 bg-white border-b border-emerald-100 shadow-2xl lg:hidden max-h-[85vh] overflow-y-auto px-5 py-6 rounded-b-3xl"
+              className="fixed inset-x-0 top-[65px] z-35 bg-white/98 backdrop-blur-xl border-b border-emerald-100 shadow-2xl lg:hidden max-h-[85vh] overflow-y-auto px-5 py-6 rounded-b-3xl"
             >
               {/* Store Status banner if closed */}
               {!isStoreOpen && (
@@ -318,3 +318,4 @@ export const Header: React.FC<HeaderProps> = ({
     </>
   );
 };
+

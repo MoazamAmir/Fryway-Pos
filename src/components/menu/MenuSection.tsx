@@ -51,7 +51,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ onCustomizeItem }) => 
 
 
   return (
-    <section id="menu" className="py-20 bg-neutral-50 relative">
+    <section id="menu" className="py-20 bg-neutral-50 relative fryway-section-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Title Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
@@ -123,16 +123,18 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ onCustomizeItem }) => 
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.96 }}
                   transition={{ duration: 0.3 }}
-                  className="bg-white rounded-3xl overflow-hidden border border-neutral-200/90 shadow-sm hover:shadow-xl hover:border-emerald-800/30 transition-all duration-300 flex flex-col group"
+                  className="bg-white rounded-3xl overflow-hidden border border-neutral-200/90 shadow-sm hover:shadow-xl hover:border-emerald-800/30 transition-all duration-300 flex flex-col group pro-card"
                 >
                   {/* Card Image Container */}
-                  <div className="relative h-60 w-full overflow-hidden bg-neutral-100">
+                  <div className="relative h-60 w-full overflow-hidden bg-neutral-100 hot-food-media">
                     <img
                       src={product.image}
                       alt={product.name}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
+                    <div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div>
+                    <span className="image-sheen" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
                     {/* Badge */}
@@ -170,6 +172,33 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ onCustomizeItem }) => 
                       <p className="text-xs text-neutral-600 line-clamp-2 mb-4 leading-relaxed">
                         {product.description}
                       </p>
+                      {product.nutrition && (
+                        <div className="mb-4 grid grid-cols-5 gap-1.5">
+                          {[
+                            ['Cal', `${product.nutrition.calories}`],
+                            ['Protein', `${product.nutrition.protein}g`],
+                            ['Fat', `${product.nutrition.fat}g`],
+                            ['Carbs', `${product.nutrition.carbs}g`],
+                            ['Sodium', `${product.nutrition.sodium}mg`],
+                          ].map(([label, value]) => (
+                            <div key={label} className="rounded-xl bg-neutral-50 border border-neutral-200 px-2 py-2 text-center">
+                              <div className="text-[9px] font-black uppercase text-neutral-400">{label}</div>
+                              <div className="text-[11px] font-black text-neutral-900">{value}</div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {product.details && product.details.length > 0 && (
+                        <div className="mb-4 grid grid-cols-1 gap-1.5 text-[11px]">
+                          {product.details.slice(0, 3).map((detail) => (
+                            <div key={detail.label} className="flex justify-between gap-3 rounded-xl bg-emerald-50/70 border border-emerald-100 px-3 py-2">
+                              <span className="font-black uppercase text-emerald-900 shrink-0">{detail.label}</span>
+                              <span className="text-neutral-700 text-right leading-snug">{detail.value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
 
                       {/* Explicit Variant Breakdown Matrix */}
                       {pricing && (
@@ -260,7 +289,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ onCustomizeItem }) => 
         )}
 
         {/* Extras Quick Add-on Strip */}
-        <div className="mt-14 bg-white rounded-3xl p-6 sm:p-8 border border-neutral-200 shadow-sm">
+        <div className="mt-14 bg-white rounded-3xl p-6 sm:p-8 border border-neutral-200 shadow-sm pro-card">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <span className="text-xs font-black uppercase text-emerald-800 tracking-wider">
@@ -303,3 +332,7 @@ export const MenuSection: React.FC<MenuSectionProps> = ({ onCustomizeItem }) => 
     </section>
   );
 };
+
+
+
+

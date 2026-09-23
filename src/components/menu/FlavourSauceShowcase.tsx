@@ -39,7 +39,7 @@ export const FlavourSauceShowcase: React.FC<FlavourSauceShowcaseProps> = ({
   );
 
   return (
-    <section id="flavours-sauces" className="py-16 md:py-24 bg-white border-y border-neutral-200/80">
+    <section id="flavours-sauces" className="py-16 md:py-24 bg-white border-y border-neutral-200/80 fryway-section-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10">
@@ -117,7 +117,7 @@ export const FlavourSauceShowcase: React.FC<FlavourSauceShowcaseProps> = ({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: idx * 0.02 }}
-                className="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/30 transition-all flex flex-col justify-between group shadow-xs hover:shadow-md"
+                className="p-5 rounded-2xl bg-white/90 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/30 transition-all flex flex-col justify-between group shadow-sm hover:shadow-md pro-card"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -160,7 +160,7 @@ export const FlavourSauceShowcase: React.FC<FlavourSauceShowcaseProps> = ({
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.25, delay: idx * 0.02 }}
-                className="p-5 rounded-2xl bg-neutral-50 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/30 transition-all flex flex-col justify-between group shadow-xs hover:shadow-md"
+                className="p-5 rounded-2xl bg-white/90 border border-neutral-200/90 hover:border-emerald-800/40 hover:bg-emerald-50/30 transition-all flex flex-col justify-between group shadow-sm hover:shadow-md pro-card"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
@@ -203,7 +203,7 @@ export const FlavourSauceShowcase: React.FC<FlavourSauceShowcaseProps> = ({
             <button
               id="flavours-build-custom-order-btn"
               onClick={onSelectCustomize}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm shadow-md transition-all active:scale-95"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-sm shadow-md transition-all active:scale-95 hover:-translate-y-0.5"
             >
               <ChefHat className="w-4 h-4 text-amber-300" />
               <span>Customize Your Hand-Cut Fries Now</span>
@@ -214,3 +214,4 @@ export const FlavourSauceShowcase: React.FC<FlavourSauceShowcaseProps> = ({
     </section>
   );
 };
+

@@ -5,7 +5,7 @@ import { FRYWAY_IMAGES, RESTAURANT_INFO } from '../../data/menuData';
 
 export const AboutSection: React.FC = () => {
   return (
-    <section id="about" className="py-20 bg-neutral-50 relative overflow-hidden">
+    <section id="about" className="py-20 bg-neutral-50 relative overflow-hidden fryway-section-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           {/* Visual Store Craft Photo (Replaceable Architecture) */}
@@ -16,13 +16,15 @@ export const AboutSection: React.FC = () => {
             transition={{ duration: 0.6 }}
             className="lg:col-span-6 relative"
           >
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-neutral-900 group">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-white bg-neutral-900 group hot-food-media pro-card">
               <img
                 src={FRYWAY_IMAGES.storeCraft}
                 alt="Fryway Kitchen Hand Cut Fries preparation in Bahria Town Lahore"
                 referrerPolicy="no-referrer"
                 className="w-full h-[400px] sm:h-[460px] object-cover transition-transform duration-700 group-hover:scale-105"
               />
+              <div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div>
+              <span className="image-sheen" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
               {/* Tag on image */}
@@ -105,3 +107,5 @@ export const AboutSection: React.FC = () => {
     </section>
   );
 };
+
+

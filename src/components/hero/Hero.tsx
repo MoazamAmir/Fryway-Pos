@@ -13,12 +13,9 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
   return (
     <section
       id="hero"
-      className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-gradient-to-b from-emerald-50/60 via-white to-neutral-50"
+      className="relative pt-28 pb-16 md:pt-36 md:pb-24 overflow-hidden bg-gradient-to-b from-emerald-50/60 via-white to-neutral-50 fryway-section-surface"
     >
-      {/* Subtle organic background glow */}
-      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-emerald-100/40 rounded-full blur-3xl pointer-events-none -z-10" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           {/* Left Text Column */}
           <motion.div
@@ -28,7 +25,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
             className="lg:col-span-7 flex flex-col items-start text-left"
           >
             {/* Live Operational Status Tag */}
-            <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-2xl sm:rounded-full bg-white border border-emerald-200/80 shadow-xs mb-6">
+            <div className="inline-flex flex-wrap items-center gap-2 px-3.5 py-1.5 rounded-2xl sm:rounded-full bg-white/90 backdrop-blur-md border border-emerald-200/80 shadow-sm mb-6 pro-card">
               <span className="flex h-2 w-2 relative shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600"></span>
@@ -68,7 +65,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
               <button
                 id="hero-order-now-cta"
                 onClick={onOrderNow}
-                className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-base shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-3 px-8 py-4 rounded-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-base shadow-lg shadow-emerald-950/20 hover:shadow-emerald-950/30 transition-all active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer hover:-translate-y-0.5"
               >
                 <Sparkles className="w-5 h-5 text-amber-300" />
                 <span>START ORDER</span>
@@ -78,7 +75,7 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
               <button
                 id="hero-explore-menu-cta"
                 onClick={onExploreMenu}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white hover:bg-emerald-50 text-emerald-900 border-2 border-emerald-800/30 hover:border-emerald-800 font-bold text-base transition-all focus:outline-none cursor-pointer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-white hover:bg-emerald-50 text-emerald-900 border-2 border-emerald-800/30 hover:border-emerald-800 font-bold text-base transition-all focus:outline-none cursor-pointer hover:-translate-y-0.5 shadow-sm"
               >
                 <span>VIEW MENU</span>
               </button>
@@ -136,13 +133,16 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
             className="lg:col-span-5 relative"
           >
             {/* Modern Card Frame for Hero Food Image */}
-            <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-emerald-950/20 border-4 border-white bg-white group">
+            <div className="relative rounded-3xl overflow-hidden shadow-2xl shadow-emerald-950/20 border-4 border-white bg-white group hot-food-media pro-card">
               <img
                 src={FRYWAY_IMAGES.hero}
                 alt="Fryway Authentic Hand Cut Fries with signature sauces and seasonings"
                 referrerPolicy="no-referrer"
                 className="w-full h-[360px] sm:h-[440px] lg:h-[480px] object-cover transition-transform duration-700 group-hover:scale-105"
               />
+
+              <div className="steam-wisps" aria-hidden="true"><span /><span /><span /><span /></div>
+              <span className="image-sheen" />
 
               {/* Gradient Overlay for Tag Readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/10 pointer-events-none" />
@@ -177,12 +177,12 @@ export const Hero: React.FC<HeroProps> = ({ onOrderNow, onExploreMenu }) => {
             </div>
 
             {/* Decorative Subtle Accent Tag */}
-            <div className="hidden sm:block absolute -bottom-5 -left-5 bg-amber-400 text-amber-950 font-black text-xs uppercase px-4 py-2 rounded-xl shadow-md rotate-[-3deg] border border-amber-300">
-              ⚡ Double Cooked for Ultra Crunch
-            </div>
+            <div className="hidden sm:block absolute -bottom-5 -left-5 bg-amber-400 text-amber-950 font-black text-xs uppercase px-4 py-2 rounded-xl shadow-md rotate-[-3deg] border border-amber-300 float-soft">Double Cooked for Ultra Crunch</div>
           </motion.div>
         </div>
       </div>
     </section>
   );
 };
+
+

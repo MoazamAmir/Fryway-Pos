@@ -13,7 +13,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onOrderNow }) =>
   );
 
   return (
-    <section id="contact" className="py-20 bg-white border-t border-neutral-200">
+    <section id="contact" className="py-20 bg-white border-t border-neutral-200 fryway-section-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-50 text-emerald-900 text-xs font-black uppercase tracking-wider mb-3 border border-emerald-200">
@@ -30,7 +30,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onOrderNow }) =>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
           {/* Phone Contact Card */}
-          <div className="p-8 rounded-3xl bg-neutral-50 border border-neutral-200 hover:border-emerald-800/30 transition-all flex flex-col justify-between">
+          <div className="p-8 rounded-3xl bg-white/90 border border-neutral-200 hover:border-emerald-800/30 transition-all flex flex-col justify-between shadow-sm hover:shadow-lg pro-card">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center mb-6 shadow-md shadow-emerald-900/10">
                 <Phone className="w-6 h-6" />
@@ -69,7 +69,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onOrderNow }) =>
           </div>
 
           {/* Location Card */}
-          <div className="p-8 rounded-3xl bg-neutral-50 border border-neutral-200 hover:border-emerald-800/30 transition-all flex flex-col justify-between">
+          <div className="p-8 rounded-3xl bg-white/90 border border-neutral-200 hover:border-emerald-800/30 transition-all flex flex-col justify-between shadow-sm hover:shadow-lg pro-card">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-white flex items-center justify-center mb-6 shadow-md shadow-emerald-900/10">
                 <MapPin className="w-6 h-6" />
@@ -100,7 +100,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onOrderNow }) =>
           </div>
 
           {/* Timings & Online Ordering Card */}
-          <div className="p-8 rounded-3xl bg-emerald-950 text-white border border-emerald-900 flex flex-col justify-between">
+          <div className="p-8 rounded-3xl bg-emerald-950 text-white border border-emerald-900 flex flex-col justify-between shadow-xl shadow-emerald-950/15 pro-card">
             <div>
               <div className="w-12 h-12 rounded-2xl bg-emerald-800 text-amber-300 flex items-center justify-center mb-6 shadow-md">
                 <Clock className="w-6 h-6" />
@@ -133,3 +133,4 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ onOrderNow }) =>
     </section>
   );
 };
+
