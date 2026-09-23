@@ -81,13 +81,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   ];
 
   const content = (
-    <div className="flex flex-col h-full bg-white text-neutral-900 border-r border-neutral-200/90 shadow-sm select-none">
+    <div className="flex flex-col h-full backdrop-blur-2xl bg-neutral-950/85 text-white border-r border-white/10 shadow-2xl select-none">
       {/* Brand Header */}
-      <div className="p-5 border-b border-neutral-100 flex items-center justify-between">
-        <BrandLogo size="md" variant="dark" />
+      <div className="p-5 border-b border-white/10 flex items-center justify-between">
+        <BrandLogo size="md" variant="light" />
         <button
           onClick={onCloseMobile}
-          className="lg:hidden p-1.5 rounded-lg text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 cursor-pointer"
+          className="lg:hidden p-1.5 rounded-lg text-neutral-400 hover:text-white hover:bg-white/10 cursor-pointer"
           aria-label="Close sidebar"
         >
           <X className="w-5 h-5" />
@@ -95,18 +95,18 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       </div>
 
       {/* Operational Status Banner */}
-      <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-100 flex items-center justify-between text-xs">
+      <div className="px-5 py-3 bg-white/[0.03] border-b border-white/10 flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
           <span
             className={`w-2.5 h-2.5 rounded-full ${
-              isRestaurantOpen ? 'bg-emerald-600 animate-pulse' : 'bg-rose-500'
+              isRestaurantOpen ? 'bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400' : 'bg-rose-500'
             }`}
           />
-          <span className="font-bold text-neutral-800">
+          <span className="font-bold text-neutral-200">
             {isRestaurantOpen ? 'Store: Live Open' : 'Store: Paused'}
           </span>
         </div>
-        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-white border border-neutral-200 text-neutral-600 shadow-2xs">
+        <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-md bg-white/10 border border-white/10 text-emerald-300 shadow-2xs">
           Bahria Town
         </span>
       </div>
@@ -129,14 +129,14 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               }}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-800 text-white font-extrabold shadow-md shadow-emerald-950/15'
-                  : 'text-neutral-600 hover:text-emerald-900 hover:bg-emerald-50/70'
+                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white font-extrabold shadow-lg shadow-emerald-950/40 border border-emerald-400/30'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/5'
               }`}
             >
               <div className="flex items-center gap-3">
                 <Icon
                   className={`w-4 h-4 shrink-0 ${
-                    isActive ? 'text-amber-300 stroke-[2.5]' : 'text-neutral-500'
+                    isActive ? 'text-amber-300 stroke-[2.5]' : 'text-neutral-400'
                   }`}
                 />
                 <span className="truncate">{item.label}</span>
@@ -144,7 +144,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               {item.badge !== undefined && (
                 <span
                   className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                    isActive ? 'bg-white/20 text-white' : item.badgeColor || 'bg-neutral-100 text-neutral-700'
+                    isActive ? 'bg-white/20 text-white' : item.badgeColor || 'bg-white/10 text-neutral-300 border border-white/10'
                   }`}
                 >
                   {item.badge}
@@ -155,7 +155,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         })}
 
         {/* Quick Link to Kitchen Display System */}
-        <div className="pt-4 mt-4 border-t border-neutral-100">
+        <div className="pt-4 mt-4 border-t border-white/10">
           <div className="px-3 pb-2 text-[10px] font-black uppercase tracking-wider text-neutral-400">
             Operations
           </div>
@@ -164,35 +164,35 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
               if (onNavigateToKitchen) onNavigateToKitchen();
               else window.location.pathname = '/kitchen';
             }}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-emerald-900 hover:bg-emerald-50 transition-colors cursor-pointer border border-emerald-200/60"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold text-emerald-300 hover:bg-emerald-950/50 transition-colors cursor-pointer border border-emerald-500/20"
           >
             <div className="flex items-center gap-2.5">
-              <ChefHat className="w-4 h-4 text-emerald-800" />
+              <ChefHat className="w-4 h-4 text-emerald-400" />
               <span>Kitchen Display (KDS)</span>
             </div>
-            <ExternalLink className="w-3.5 h-3.5 text-emerald-700" />
+            <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
           </button>
         </div>
       </div>
 
       {/* Footer: User Role & Logout */}
-      <div className="p-4 border-t border-neutral-100 bg-neutral-50/70">
+      <div className="p-4 border-t border-white/10 bg-white/[0.02]">
         <div className="flex items-center justify-between gap-2 mb-3">
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="w-8 h-8 rounded-full bg-emerald-800 text-white font-black text-xs flex items-center justify-center shrink-0">
+            <div className="w-8 h-8 rounded-full bg-emerald-700 text-white font-black text-xs flex items-center justify-center shrink-0 border border-emerald-400/30">
               AD
             </div>
             <div className="overflow-hidden">
-              <div className="text-xs font-black text-neutral-900 truncate">Store Owner</div>
-              <div className="text-[10px] font-semibold text-neutral-500 truncate">Administrator</div>
+              <div className="text-xs font-black text-white truncate">Store Owner</div>
+              <div className="text-[10px] font-semibold text-neutral-400 truncate">Administrator</div>
             </div>
           </div>
-          <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0" title="Authenticated" />
+          <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-xs shadow-emerald-400 shrink-0" title="Authenticated" />
         </div>
 
         <button
           onClick={onExitMode}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-700 hover:bg-rose-50 border border-rose-200 transition-all cursor-pointer"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-rose-300 hover:bg-rose-950/40 border border-rose-500/30 transition-all cursor-pointer"
         >
           <LogOut className="w-3.5 h-3.5" />
           <span>Lock & Exit Admin</span>

@@ -247,7 +247,18 @@ export function deleteCustomMenuItem(id: string): void {
 export function getFlavoursList(): ManagedFlavour[] {
   try {
     const saved = localStorage.getItem(FLAVOURS_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed: ManagedFlavour[] = JSON.parse(saved);
+      // Auto-backfill images if missing from previous local storage version
+      const enriched = parsed.map((item) => {
+        if (!item.image) {
+          const match = FLAVOURS.find((f) => f.id === item.id);
+          return match ? { ...item, image: match.image } : item;
+        }
+        return item;
+      });
+      return enriched;
+    }
   } catch {}
   const initial: ManagedFlavour[] = FLAVOURS.map((f) => ({ ...f, isAvailable: true }));
   try {
@@ -302,7 +313,18 @@ export function deleteFlavour(id: string): void {
 export function getSaucesList(): ManagedSauce[] {
   try {
     const saved = localStorage.getItem(SAUCES_KEY);
-    if (saved) return JSON.parse(saved);
+    if (saved) {
+      const parsed: ManagedSauce[] = JSON.parse(saved);
+      // Auto-backfill images if missing from previous local storage version
+      const enriched = parsed.map((item) => {
+        if (!item.image) {
+          const match = SAUCES.find((s) => s.id === item.id);
+          return match ? { ...item, image: match.image } : item;
+        }
+        return item;
+      });
+      return enriched;
+    }
   } catch {}
   const initial: ManagedSauce[] = SAUCES.map((s) => ({ ...s, isAvailable: true }));
   try {
@@ -406,6 +428,34 @@ export function deleteExtra(id: string): void {
     localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
   } catch {}
   broadcastUpdate('fryway_extra_update', updated);
+}
+
+export function editExtra(id: string, updates: Partial<ManagedExtra>): void {
+  const current = getExtrasList();
+  const updated = current.map((e) => (e.id === id ? { ...e, ...updates } : e));
+  try {
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(updated));
+  } catch {}
+  broadcastUpdate('fryway_extra_update', updated);
+}
+
+export function resetMenuToDefaults(): void {
+  const initialProducts = MENU_PRODUCTS.map((item) => ({ ...item, isAvailable: true }));
+  const initialFlavours: ManagedFlavour[] = FLAVOURS.map((f) => ({ ...f, isAvailable: true }));
+  const initialSauces: ManagedSauce[] = SAUCES.map((s) => ({ ...s, isAvailable: true }));
+  const initialExtras: ManagedExtra[] = EXTRAS.map((e) => ({ ...e, isAvailable: true }));
+
+  try {
+    localStorage.setItem(MENU_KEY, JSON.stringify(initialProducts));
+    localStorage.setItem(FLAVOURS_KEY, JSON.stringify(initialFlavours));
+    localStorage.setItem(SAUCES_KEY, JSON.stringify(initialSauces));
+    localStorage.setItem(EXTRAS_KEY, JSON.stringify(initialExtras));
+  } catch {}
+
+  broadcastUpdate('fryway_menu_update', initialProducts);
+  broadcastUpdate('fryway_flavour_update', initialFlavours);
+  broadcastUpdate('fryway_sauce_update', initialSauces);
+  broadcastUpdate('fryway_extra_update', initialExtras);
 }
 
 // ----------------------------------------------------

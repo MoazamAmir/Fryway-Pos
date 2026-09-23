@@ -63,6 +63,8 @@ import {
 } from '../../lib/restaurantStore';
 import { formatPKR } from '../../lib/pricing';
 import { audioAlerts } from '../../lib/audioAlerts';
+import { AdminLiveCharts } from './AdminLiveCharts';
+import { FRYWAY_IMAGES, IMAGE_PRESETS } from '../../data/menuData';
 
 // Modular Sub-Tabs
 import { AdminSidebar, AdminTab } from './AdminSidebar';
@@ -112,6 +114,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
   const [newMenuCategory, setNewMenuCategory] = useState<'fries' | 'extras'>('fries');
   const [newMenuTagline, setNewMenuTagline] = useState('');
   const [newMenuDesc, setNewMenuDesc] = useState('');
+  const [newMenuImage, setNewMenuImage] = useState(IMAGE_PRESETS.fries[0].url);
 
   // Edit Price Modal
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
@@ -271,7 +274,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
       tagline: newMenuTagline || 'Authentic hand-cut addition',
       description: newMenuDesc || 'Prepared fresh daily to order in Bahria Town.',
       badge: 'New Addition',
-      image: '',
+      image: newMenuImage || FRYWAY_IMAGES.plainFries,
     });
 
     setNewMenuName('');
@@ -291,7 +294,14 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 text-neutral-900 flex font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen relative text-neutral-100 flex font-['Plus_Jakarta_Sans',sans-serif] bg-neutral-950 overflow-hidden">
+      {/* Dark Luxury Culinary Restaurant Background Image */}
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center pointer-events-none opacity-20 filter contrast-125 saturate-150"
+        style={{ backgroundImage: `url(${FRYWAY_IMAGES.storeCraft})` }}
+      />
+      <div className="fixed inset-0 z-0 bg-gradient-to-br from-neutral-950/95 via-neutral-950/90 to-emerald-950/30 backdrop-blur-2xl pointer-events-none" />
+
       {/* 1. Desktop & Mobile Sidebar */}
       <AdminSidebar
         activeTab={activeTab}
@@ -313,27 +323,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
       />
 
       {/* 2. Main Content Container */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 overflow-y-auto relative z-10">
         {/* Top Sticky Header */}
-        <header className="bg-white border-b border-neutral-200/90 px-4 sm:px-6 py-3.5 shrink-0 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-xs">
+        <header className="backdrop-blur-xl bg-neutral-950/80 border-b border-white/10 px-4 sm:px-6 py-3.5 shrink-0 flex items-center justify-between gap-4 sticky top-0 z-30 shadow-2xl">
           <div className="flex items-center gap-3">
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-xl bg-neutral-100 text-neutral-700 hover:text-neutral-900 cursor-pointer"
+              className="lg:hidden p-2 rounded-xl bg-white/10 text-neutral-300 hover:text-white cursor-pointer"
               aria-label="Open sidebar"
             >
               <MenuIcon className="w-5 h-5" />
             </button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-black uppercase tracking-wider text-neutral-900">
+                <h1 className="text-sm font-black uppercase tracking-wider text-white">
                   FRYWAY EXECUTIVE PORTAL
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase border border-emerald-200 hidden sm:inline">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase border border-emerald-500/30 hidden sm:inline">
                   Admin Console
                 </span>
               </div>
-              <span className="text-xs text-neutral-500">
+              <span className="text-xs text-neutral-400">
                 Commercial Sector C, Bahria Town Lahore • Live System Time: {currentTime}
               </span>
             </div>
@@ -342,15 +352,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
           <div className="flex items-center gap-3">
             {/* Quick Timeframe pill when in Overview */}
             {activeTab === 'overview' && (
-              <div className="hidden sm:flex items-center bg-neutral-100 p-1 rounded-xl border border-neutral-200 text-xs">
+              <div className="hidden sm:flex items-center backdrop-blur-md bg-white/5 p-1 rounded-xl border border-white/10 text-xs">
                 {(['today', 'yesterday', 'week', 'month', 'year'] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => setTimeframe(t)}
                     className={`px-3 py-1 rounded-lg font-bold capitalize transition-all cursor-pointer ${
                       timeframe === t
-                        ? 'bg-emerald-800 text-white shadow-xs'
-                        : 'text-neutral-600 hover:text-neutral-900'
+                        ? 'bg-emerald-600 text-white shadow-md shadow-emerald-950/40'
+                        : 'text-neutral-400 hover:text-white'
                     }`}
                   >
                     {t === 'today' ? 'Today' : t === 'yesterday' ? 'Yesterday' : t === 'week' ? 'This Week' : t === 'month' ? 'This Month' : 'Year'}
@@ -361,7 +371,7 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
             <button
               onClick={onExitMode}
-              className="px-3.5 py-1.5 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 text-xs font-bold transition-all border border-neutral-300 cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl backdrop-blur-md bg-white/10 hover:bg-white/15 text-neutral-200 text-xs font-bold transition-all border border-white/10 cursor-pointer"
             >
               Lock Console
             </button>
@@ -374,27 +384,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
           {activeTab === 'overview' && (
             <div className="space-y-6">
               {/* Top Banner Notice */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-xl bg-neutral-900/65 p-5 rounded-2xl border border-white/10 shadow-2xl">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-black text-neutral-900 uppercase tracking-tight">
+                    <h2 className="text-xl font-black text-white uppercase tracking-tight">
                       {metrics.periodLabel}
                     </h2>
-                    <span className="px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-500 text-[10px] font-bold uppercase">
-                      Live Sample Data
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase border border-emerald-500/30">
+                      Live Dashboard
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-0.5">
+                  <p className="text-xs text-neutral-400 mt-0.5">
                     Real-time sales, order counts, operational costs, and fulfillment metrics for Bahria Town.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-neutral-500">Store Status:</span>
+                  <span className="text-xs font-semibold text-neutral-400">Store Status:</span>
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-black uppercase ${
                       settings.isOpen
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                        : 'bg-rose-50 text-rose-800 border border-rose-200'
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 shadow-xs shadow-emerald-500/30'
+                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                     }`}
                   >
                     {settings.isOpen ? '🟢 Open For Orders' : '🔴 Store Paused'}
@@ -402,217 +412,175 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
                 </div>
               </div>
 
-              {/* Major Executive Statistic Cards (Section 24) */}
+              {/* Major Executive Statistic Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* 1. Today's / Period Sales */}
-                <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs text-neutral-500 font-bold uppercase tracking-wider">
-                    <span>Today's Sales</span>
-                    <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center font-bold">
+                <div className="p-5 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs text-neutral-400 font-bold uppercase tracking-wider">
+                    <span>{timeframe === 'today' ? "Today's Sales" : 'Period Sales'}</span>
+                    <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold border border-emerald-500/30">
                       <DollarSign className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-2xl font-black text-neutral-900">
+                  <div className="text-2xl font-black text-white">
                     {formatPKR(Math.round(metrics.rev))}
                   </div>
-                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-700">
+                  <div className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
                     <ArrowUpRight className="w-3.5 h-3.5" />
                     <span>{metrics.growthBadge}</span>
                   </div>
                 </div>
 
                 {/* 2. Today's Orders */}
-                <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs text-neutral-500 font-bold uppercase tracking-wider">
-                    <span>Today's Orders</span>
-                    <div className="w-8 h-8 rounded-xl bg-neutral-100 text-neutral-700 flex items-center justify-center font-bold">
+                <div className="p-5 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs text-neutral-400 font-bold uppercase tracking-wider">
+                    <span>Tickets Handled</span>
+                    <div className="w-8 h-8 rounded-xl bg-white/10 text-neutral-300 flex items-center justify-center font-bold border border-white/10">
                       <ShoppingBag className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-2xl font-black text-neutral-900">
+                  <div className="text-2xl font-black text-white">
                     {metrics.ordCount} Orders
                   </div>
-                  <span className="text-[11px] text-neutral-500 font-medium">
-                    Avg Order: {formatPKR(metrics.aov)}
+                  <span className="text-[11px] text-neutral-400 font-medium">
+                    Avg Ticket: {formatPKR(metrics.aov)}
                   </span>
                 </div>
 
                 {/* 3. Takeaway vs Delivery breakdown */}
-                <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs text-neutral-500 font-bold uppercase tracking-wider">
+                <div className="p-5 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs text-neutral-400 font-bold uppercase tracking-wider">
                     <span>Channel Volume</span>
-                    <div className="w-8 h-8 rounded-xl bg-neutral-100 text-neutral-700 flex items-center justify-center font-bold">
+                    <div className="w-8 h-8 rounded-xl bg-white/10 text-neutral-300 flex items-center justify-center font-bold border border-white/10">
                       <Store className="w-4 h-4" />
                     </div>
                   </div>
-                  <div className="text-sm font-bold text-neutral-900 space-y-1">
+                  <div className="text-xs font-bold text-neutral-200 space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-neutral-500 font-normal">Takeaway:</span>
-                      <span className="font-bold">{takeawayOrders.length} orders ({formatPKR(takeawaySales)})</span>
+                      <span className="text-neutral-400 font-normal">Takeaway:</span>
+                      <span className="font-bold text-white">{takeawayOrders.length} orders ({formatPKR(takeawaySales)})</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-neutral-500 font-normal">Delivery:</span>
-                      <span className="font-bold">{deliveryOrders.length} orders ({formatPKR(deliverySales)})</span>
+                      <span className="text-neutral-400 font-normal">Delivery:</span>
+                      <span className="font-bold text-white">{deliveryOrders.length} orders ({formatPKR(deliverySales)})</span>
                     </div>
                   </div>
                 </div>
 
                 {/* 4. Recorded Profit */}
-                <div className="p-5 rounded-2xl bg-white border border-neutral-200/90 shadow-xs space-y-2">
-                  <div className="flex items-center justify-between text-xs text-neutral-500 font-bold uppercase tracking-wider">
+                <div className="p-5 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl space-y-2">
+                  <div className="flex items-center justify-between text-xs text-neutral-400 font-bold uppercase tracking-wider">
                     <span>Recorded Net Profit</span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-black border border-emerald-200">
-                      {metrics.profitMargin}%
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black border border-emerald-500/30">
+                      {metrics.profitMargin}% Margin
                     </span>
                   </div>
-                  <div className="text-2xl font-black text-emerald-950">
+                  <div className="text-2xl font-black text-emerald-400">
                     {formatPKR(Math.round(metrics.netProfit))}
                   </div>
-                  <span className="text-[11px] text-neutral-500 font-medium">
-                    Calculated: Sales − Operating Expenses
+                  <span className="text-[11px] text-neutral-400 font-medium">
+                    Calculated: Sales − Expenses
                   </span>
                 </div>
               </div>
 
-              {/* Order Status Breakdown Pipeline (Section 24 & 26) */}
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/90 shadow-xs space-y-4">
-                <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
-                  Live Fulfillment Status Breakdown
-                </h3>
+              {/* LIVE INTERACTIVE CHARTS: Real-time Curve & Rush Velocity */}
+              <AdminLiveCharts
+                orders={orders}
+                timeframe={timeframe}
+                onTimeframeChange={setTimeframe}
+              />
+
+              {/* Order Status Breakdown Pipeline */}
+              <div className="backdrop-blur-xl bg-neutral-900/65 p-5 rounded-2xl border border-white/10 shadow-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    Live Kitchen & Fulfillment Pipeline
+                  </h3>
+                  <span className="text-xs text-neutral-400">Active status across kitchen screens</span>
+                </div>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
-                    <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-1">Pending</span>
-                    <span className="text-xl font-black text-blue-700">{pendingOrders}</span>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-1">Pending</span>
+                    <span className="text-xl font-black text-blue-400">{pendingOrders}</span>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
-                    <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-1">Preparing</span>
-                    <span className="text-xl font-black text-amber-700">{preparingOrders}</span>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-1">Preparing</span>
+                    <span className="text-xl font-black text-amber-400">{preparingOrders}</span>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
-                    <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-1">Ready</span>
-                    <span className="text-xl font-black text-emerald-800">{readyOrders}</span>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-1">Ready</span>
+                    <span className="text-xl font-black text-emerald-400">{readyOrders}</span>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
-                    <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-1">Completed</span>
-                    <span className="text-xl font-black text-neutral-800">{completedOrders}</span>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-1">Completed</span>
+                    <span className="text-xl font-black text-neutral-200">{completedOrders}</span>
                   </div>
-                  <div className="p-3.5 rounded-xl bg-neutral-50 border border-neutral-200 text-center">
-                    <span className="text-[10px] text-neutral-500 uppercase font-bold block mb-1">Cancelled</span>
-                    <span className="text-xl font-black text-rose-600">{cancelledOrders}</span>
+                  <div className="p-3.5 rounded-xl bg-white/[0.04] border border-white/10 text-center">
+                    <span className="text-[10px] text-neutral-400 uppercase font-bold block mb-1">Cancelled</span>
+                    <span className="text-xl font-black text-rose-400">{cancelledOrders}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Visual Sales & Analytics Charts (Section 25) */}
+              {/* Kitchen Dispatch Ticker & Channel Split */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                {/* 1. Daily / Hourly Sales Trend Chart */}
-                <div className="lg:col-span-8 bg-white p-6 rounded-2xl border border-neutral-200/90 shadow-xs space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div className="lg:col-span-8 backdrop-blur-xl bg-neutral-900/65 p-6 rounded-2xl border border-white/10 shadow-2xl space-y-4">
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
-                        Sales Volume & Revenue Trend
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                        Live Kitchen Dispatch Pipeline
                       </h3>
-                      <p className="text-xs text-neutral-500">Hourly throughput (1:00 PM – 2:00 AM peak frying)</p>
+                      <p className="text-xs text-neutral-400">Real-time tickets currently queued in fryer station</p>
                     </div>
-                    <div className="flex items-center gap-3 text-xs">
-                      <span className="flex items-center gap-1.5 font-bold text-emerald-800">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-700 inline-block" />
-                        Today's Revenue
-                      </span>
-                    </div>
+                    <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-black uppercase border border-emerald-500/30">
+                      Fry Station Online
+                    </span>
                   </div>
 
-                  {/* Clean SVG Trend Chart */}
-                  <div className="h-56 w-full pt-4">
-                    <svg viewBox="0 0 600 200" className="w-full h-full overflow-visible">
-                      <defs>
-                        <linearGradient id="salesGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="#047857" stopOpacity="0.25" />
-                          <stop offset="100%" stopColor="#047857" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-                      {/* Grid Lines */}
-                      <line x1="0" y1="40" x2="600" y2="40" stroke="#f1f5f9" strokeDasharray="3 3" />
-                      <line x1="0" y1="90" x2="600" y2="90" stroke="#f1f5f9" strokeDasharray="3 3" />
-                      <line x1="0" y1="140" x2="600" y2="140" stroke="#f1f5f9" strokeDasharray="3 3" />
-                      <line x1="0" y1="180" x2="600" y2="180" stroke="#e2e8f0" />
-
-                      {/* Area Fill */}
-                      <path
-                        d="M 30,180 L 30,160 L 90,140 L 150,150 L 210,120 L 270,110 L 330,70 L 390,45 L 450,55 L 510,35 L 570,70 L 570,180 Z"
-                        fill="url(#salesGrad)"
-                      />
-                      {/* Trend Line */}
-                      <path
-                        d="M 30,160 L 90,140 L 150,150 L 210,120 L 270,110 L 330,70 L 390,45 L 450,55 L 510,35 L 570,70"
-                        fill="none"
-                        stroke="#064e3b"
-                        strokeWidth="3.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-
-                      {/* Data Point Dots */}
-                      {[
-                        [30, 160],
-                        [90, 140],
-                        [150, 150],
-                        [210, 120],
-                        [270, 110],
-                        [330, 70],
-                        [390, 45],
-                        [450, 55],
-                        [510, 35],
-                        [570, 70],
-                      ].map(([cx, cy], i) => (
-                        <circle
-                          key={i}
-                          cx={cx}
-                          cy={cy}
-                          r="4"
-                          fill="#ffffff"
-                          stroke="#064e3b"
-                          strokeWidth="2.5"
-                        />
-                      ))}
-
-                      {/* Time Labels */}
-                      <text x="30" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">1 PM</text>
-                      <text x="150" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">4 PM</text>
-                      <text x="270" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">7 PM</text>
-                      <text x="390" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">9 PM (Peak)</text>
-                      <text x="510" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">11 PM</text>
-                      <text x="570" y="195" fontSize="10" fill="#94a3b8" textAnchor="middle">1 AM</text>
-                    </svg>
+                  <div className="divide-y divide-white/10">
+                    {orders.slice(0, 5).map((ord) => (
+                      <div key={ord.id} className="py-3 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3">
+                          <span className="font-mono font-bold text-white">#{ord.orderNumber}</span>
+                          <span className="text-neutral-300 font-semibold">{ord.customer.name}</span>
+                          <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-white/10 text-neutral-400">
+                            {ord.orderType}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="font-black text-emerald-400">{formatPKR(ord.grandTotal)}</span>
+                          <span className="capitalize px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            {ord.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
-                {/* 2. Channel Split Breakdown Donut (Section 26) */}
-                <div className="lg:col-span-4 bg-white p-6 rounded-2xl border border-neutral-200/90 shadow-xs space-y-4 flex flex-col justify-between">
+                <div className="lg:col-span-4 backdrop-blur-xl bg-neutral-900/65 p-6 rounded-2xl border border-white/10 shadow-2xl space-y-4 flex flex-col justify-between">
                   <div>
-                    <h3 className="text-sm font-bold text-neutral-900 uppercase tracking-wider">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">
                       Takeaway vs Delivery
                     </h3>
-                    <p className="text-xs text-neutral-500">Revenue contribution per channel</p>
+                    <p className="text-xs text-neutral-400">Channel revenue volume ratio</p>
                   </div>
 
                   <div className="flex items-center justify-center py-4">
                     <div className="relative w-36 h-36 flex items-center justify-center">
                       <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        {/* Circle background */}
-                        <circle cx="50" cy="50" r="38" fill="none" stroke="#f1f5f9" strokeWidth="16" />
-                        {/* Takeaway arc (~58%) */}
+                        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="16" />
                         <circle
                           cx="50"
                           cy="50"
                           r="38"
                           fill="none"
-                          stroke="#064e3b"
+                          stroke="#10b981"
                           strokeWidth="16"
                           strokeDasharray="140 240"
                           strokeLinecap="round"
                         />
-                        {/* Delivery arc (~42%) */}
                         <circle
                           cx="50"
                           cy="50"
@@ -627,27 +595,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
                       </svg>
                       <div className="absolute text-center">
                         <span className="text-xs text-neutral-400 block font-bold">Total</span>
-                        <span className="text-sm font-black text-neutral-900">
+                        <span className="text-sm font-black text-white">
                           {orders.length} Orders
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="space-y-2 text-xs pt-2 border-t border-neutral-100">
+                  <div className="space-y-2 text-xs pt-2 border-t border-white/10">
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-neutral-700">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-800" />
+                      <span className="flex items-center gap-1.5 text-neutral-300">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
                         Takeaway Counter (58%)
                       </span>
-                      <span className="font-bold text-neutral-900">{formatPKR(takeawaySales)}</span>
+                      <span className="font-bold text-white">{formatPKR(takeawaySales)}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-neutral-700">
+                      <span className="flex items-center gap-1.5 text-neutral-300">
                         <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
                         Home Delivery (42%)
                       </span>
-                      <span className="font-bold text-neutral-900">{formatPKR(deliverySales)}</span>
+                      <span className="font-bold text-white">{formatPKR(deliverySales)}</span>
                     </div>
                   </div>
                 </div>
@@ -657,45 +625,45 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className="p-4 rounded-2xl bg-white border border-neutral-200/90 shadow-xs hover:border-emerald-700 text-left transition-all cursor-pointer group"
+                  className="p-4 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl hover:border-emerald-500/50 text-left transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-sm text-neutral-900 group-hover:text-emerald-800">
+                    <span className="font-black text-sm text-white group-hover:text-emerald-300">
                       Manage Live Orders
                     </span>
-                    <ShoppingBag className="w-4 h-4 text-emerald-800" />
+                    <ShoppingBag className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-400">
                     Inspect {orders.length} tickets, update cooking stages, and dispatch riders.
                   </p>
                 </button>
 
                 <button
                   onClick={() => setActiveTab('menu')}
-                  className="p-4 rounded-2xl bg-white border border-neutral-200/90 shadow-xs hover:border-emerald-700 text-left transition-all cursor-pointer group"
+                  className="p-4 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl hover:border-emerald-500/50 text-left transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-sm text-neutral-900 group-hover:text-emerald-800">
+                    <span className="font-black text-sm text-white group-hover:text-emerald-300">
                       Menu & Sauce Availability
                     </span>
-                    <Store className="w-4 h-4 text-emerald-800" />
+                    <Store className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-400">
                     Toggle stock for 17 flavours, 13 sauces, and fry portions instantly.
                   </p>
                 </button>
 
                 <button
                   onClick={() => setIsExpenseModalOpen(true)}
-                  className="p-4 rounded-2xl bg-white border border-neutral-200/90 shadow-xs hover:border-emerald-700 text-left transition-all cursor-pointer group"
+                  className="p-4 rounded-2xl backdrop-blur-xl bg-neutral-900/65 border border-white/10 shadow-2xl hover:border-emerald-500/50 text-left transition-all cursor-pointer group"
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="font-black text-sm text-neutral-900 group-hover:text-emerald-800">
+                    <span className="font-black text-sm text-white group-hover:text-emerald-300">
                       Log Operating Expense
                     </span>
-                    <Plus className="w-4 h-4 text-emerald-800" />
+                    <Plus className="w-4 h-4 text-emerald-400" />
                   </div>
-                  <p className="text-xs text-neutral-500">
+                  <p className="text-xs text-neutral-400">
                     Record potato mandi purchases, frying oil drums, and packaging vouchers.
                   </p>
                 </button>
@@ -902,15 +870,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
       {/* MODAL 1: ADD EXPENSE */}
       {isExpenseModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-xs">
-          <div className="bg-white border border-neutral-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-              <h3 className="text-base font-black text-neutral-900 uppercase">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
+          <div className="backdrop-blur-2xl bg-neutral-900 border border-white/20 rounded-3xl p-6 w-full max-w-md shadow-2xl text-white space-y-4">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-base font-black text-white uppercase">
                 Log Operating Expense Voucher
               </h3>
               <button
                 onClick={() => setIsExpenseModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer"
               >
                 ✕
               </button>
@@ -918,36 +886,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
             <form onSubmit={handleAddExpenseSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Expense Title</label>
+                <label className="text-neutral-300 font-bold block mb-1">Expense Title</label>
                 <input
                   type="text"
                   required
                   value={expTitle}
                   onChange={(e) => setExpTitle(e.target.value)}
                   placeholder="e.g. 150kg Fresh Potatoes (Wholesale Mandi)"
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-neutral-700 font-bold block mb-1">Amount (PKR)</label>
+                  <label className="text-neutral-300 font-bold block mb-1">Amount (PKR)</label>
                   <input
                     type="number"
                     required
                     value={expAmount}
                     onChange={(e) => setExpAmount(e.target.value)}
                     placeholder="15000"
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 font-black text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-emerald-400 font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-neutral-700 font-bold block mb-1">Category</label>
+                  <label className="text-neutral-300 font-bold block mb-1">Category</label>
                   <select
                     value={expCategory}
                     onChange={(e) => setExpCategory(e.target.value as any)}
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none"
+                    className="w-full bg-neutral-800 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none"
                   >
                     <option value="potatoes_produce">Potatoes & Produce</option>
                     <option value="cooking_oil">Frying Oil</option>
@@ -963,11 +931,11 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
               </div>
 
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Payment Method</label>
+                <label className="text-neutral-300 font-bold block mb-1">Payment Method</label>
                 <select
                   value={expPayment}
                   onChange={(e) => setExpPayment(e.target.value as any)}
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none"
+                  className="w-full bg-neutral-800 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none"
                 >
                   <option value="cash">Direct Cash</option>
                   <option value="bank_transfer">Bank Transfer / Raast</option>
@@ -976,27 +944,27 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
               </div>
 
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Notes / Vendor Details</label>
+                <label className="text-neutral-300 font-bold block mb-1">Notes / Vendor Details</label>
                 <input
                   type="text"
                   value={expNotes}
                   onChange={(e) => setExpNotes(e.target.value)}
                   placeholder="Optional details..."
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setIsExpenseModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-neutral-600 hover:bg-neutral-100 font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold cursor-pointer shadow-lg shadow-emerald-950/40"
                 >
                   Save Voucher
                 </button>
@@ -1008,15 +976,15 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
       {/* MODAL 2: ADD PRODUCT */}
       {isMenuModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-xs">
-          <div className="bg-white border border-neutral-200 rounded-3xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-neutral-100 pb-3">
-              <h3 className="text-base font-black text-neutral-900 uppercase">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
+          <div className="backdrop-blur-2xl bg-neutral-900 border border-white/20 rounded-3xl p-6 w-full max-w-lg shadow-2xl text-white space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <h3 className="text-base font-black text-white uppercase">
                 Add Custom Menu Item
               </h3>
               <button
                 onClick={() => setIsMenuModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-neutral-100 text-neutral-600 flex items-center justify-center cursor-pointer"
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center cursor-pointer"
               >
                 ✕
               </button>
@@ -1024,36 +992,36 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
             <form onSubmit={handleAddProductSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Product Name</label>
+                <label className="text-neutral-300 font-bold block mb-1">Product Name</label>
                 <input
                   type="text"
                   required
                   value={newMenuName}
                   onChange={(e) => setNewMenuName(e.target.value)}
                   placeholder="e.g. Masala Potato Wedges"
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-neutral-700 font-bold block mb-1">Base Price (PKR)</label>
+                  <label className="text-neutral-300 font-bold block mb-1">Base Price (PKR)</label>
                   <input
                     type="number"
                     required
                     value={newMenuPrice}
                     onChange={(e) => setNewMenuPrice(e.target.value)}
                     placeholder="350"
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 font-black text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-emerald-400 font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
 
                 <div>
-                  <label className="text-neutral-700 font-bold block mb-1">Category</label>
+                  <label className="text-neutral-300 font-bold block mb-1">Category</label>
                   <select
                     value={newMenuCategory}
                     onChange={(e) => setNewMenuCategory(e.target.value as any)}
-                    className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none"
+                    className="w-full bg-neutral-800 border border-white/10 rounded-xl px-3 py-2.5 text-white focus:outline-none"
                   >
                     <option value="fries">Hand-Cut Fries</option>
                     <option value="extras">Extras & Dips</option>
@@ -1061,39 +1029,72 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
                 </div>
               </div>
 
+              {/* Product Image Selection & Presets */}
+              <div className="space-y-2">
+                <label className="text-neutral-300 font-bold block">Product Image (URL or Presets)</label>
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={newMenuImage}
+                  onChange={(e) => setNewMenuImage(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2 text-white focus:outline-none"
+                />
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {IMAGE_PRESETS.fries.map((p) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      onClick={() => setNewMenuImage(p.url)}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all whitespace-nowrap cursor-pointer ${
+                        newMenuImage === p.url
+                          ? 'bg-emerald-600 text-white border-emerald-400'
+                          : 'bg-white/5 text-neutral-400 border-white/10 hover:text-white'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+                {newMenuImage && (
+                  <div className="h-24 w-full rounded-xl overflow-hidden bg-neutral-950 border border-white/10">
+                    <img src={newMenuImage} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Tagline</label>
+                <label className="text-neutral-300 font-bold block mb-1">Tagline</label>
                 <input
                   type="text"
                   value={newMenuTagline}
                   onChange={(e) => setNewMenuTagline(e.target.value)}
                   placeholder="e.g. Crispy golden wedges with garlic seasoning"
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
               <div>
-                <label className="text-neutral-700 font-bold block mb-1">Description</label>
+                <label className="text-neutral-300 font-bold block mb-1">Description</label>
                 <textarea
                   rows={2}
                   value={newMenuDesc}
                   onChange={(e) => setNewMenuDesc(e.target.value)}
                   placeholder="Short description of the item..."
-                  className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setIsMenuModalOpen(false)}
-                  className="px-4 py-2 rounded-xl text-neutral-600 hover:bg-neutral-100 font-bold cursor-pointer"
+                  className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white font-bold cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold cursor-pointer"
+                  className="px-6 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold cursor-pointer shadow-lg shadow-emerald-950/40"
                 >
                   Add to Menu
                 </button>
@@ -1105,37 +1106,37 @@ export const AdminPortal: React.FC<AdminPortalProps> = ({ onExitMode }) => {
 
       {/* MODAL 3: EDIT PRICE */}
       {editingItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/60 backdrop-blur-xs">
-          <div className="bg-white border border-neutral-200 rounded-3xl p-6 w-full max-w-sm shadow-2xl space-y-4">
-            <h3 className="text-base font-black text-neutral-900 uppercase">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
+          <div className="backdrop-blur-2xl bg-neutral-900 border border-white/20 rounded-3xl p-6 w-full max-w-sm shadow-2xl text-white space-y-4">
+            <h3 className="text-base font-black text-white uppercase">
               Update Base Price
             </h3>
-            <p className="text-xs text-neutral-500">
-              Editing price for: <strong>{editingItem.name}</strong>
+            <p className="text-xs text-neutral-400">
+              Editing price for: <strong className="text-white">{editingItem.name}</strong>
             </p>
 
             <div>
-              <label className="text-neutral-700 font-bold block mb-1 text-xs">New Base Price (PKR)</label>
+              <label className="text-neutral-300 font-bold block mb-1 text-xs">New Base Price (PKR)</label>
               <input
                 type="number"
                 value={editPriceVal}
                 onChange={(e) => setEditPriceVal(e.target.value)}
-                className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2 text-neutral-900 text-sm font-black text-emerald-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3.5 py-2.5 text-emerald-400 text-sm font-black focus:outline-none focus:ring-2 focus:ring-emerald-500"
               />
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
               <button
                 type="button"
                 onClick={() => setEditingItem(null)}
-                className="px-4 py-2 rounded-xl text-neutral-600 hover:bg-neutral-100 font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl text-neutral-400 hover:text-white font-bold text-xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleSavePrice}
-                className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs cursor-pointer"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-bold text-xs cursor-pointer shadow-lg shadow-emerald-950/40"
               >
                 Save Price
               </button>

@@ -8,6 +8,7 @@ export interface FlavourItem {
   description: string;
   category: 'spicy' | 'cheesy' | 'tangy' | 'savory' | 'herbal';
   heatLevel: 0 | 1 | 2 | 3;
+  image?: string;
   popular?: boolean;
   isAvailable?: boolean;
   nutrition?: NutritionInfo;
@@ -23,6 +24,7 @@ export interface SauceItem {
   description: string;
   profile: 'creamy' | 'tangy' | 'hot' | 'smokey';
   heatLevel: 0 | 1 | 2 | 3;
+  image?: string;
   popular?: boolean;
   isAvailable?: boolean;
   nutrition?: NutritionInfo;
@@ -37,6 +39,7 @@ export interface ExtraItem {
   name: string;
   price: number;
   category: 'dip' | 'sachet';
+  image?: string;
   description?: string;
   isAvailable?: boolean;
   nutrition?: NutritionInfo;
